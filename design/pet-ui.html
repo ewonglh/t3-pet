@@ -52,7 +52,6 @@
   <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-check-check" viewBox="0 0 24 24"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></symbol>
   <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
-  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
   <symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></symbol>
   <symbol id="i-arrow-left-right" viewBox="0 0 24 24"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></symbol>
   <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
@@ -316,7 +315,7 @@
       var li = e.target.closest('.card'); if (!li) return;
       var i = self.cards.indexOf(li);
       if (e.target.closest('.card__dismiss')) { self.dismiss(i); return; }
-      if (i === self.cur) { self.log('Opening t3code://threads/<environment-id>/' + li.dataset.id); return; }
+      if (i === self.cur) { self.open(); return; }
       if (i > self.cur) self.go(i);
     });
     this.root.addEventListener('pointerenter', function () { self.root.removeAttribute('data-active'); });
@@ -328,19 +327,32 @@
       el.addEventListener('focusout', function () { setTimeout(function () { if (!self.pinKeys && !self.active()) self.slot.dataset.keys = 'off'; }, 0); });
     });
   }
+  /* Cards are built with createElement, textContent and setAttribute, so thread text is never parsed as HTML */
+  function mk(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function icon(id, cls) {
+    var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('class', 'icon' + (cls ? ' ' + cls : ''));
+    var u = document.createElementNS('http://www.w3.org/2000/svg', 'use'); u.setAttribute('href', '#' + id); s.appendChild(u); return s;
+  }
   Stack.prototype.make = function (t) {
-    var li = document.createElement('div');
-    li.className = 'card'; li.setAttribute('role', 'listitem');
+    var li = mk('div', 'card'); li.setAttribute('role', 'listitem');
     li.dataset.status = t.status; li.dataset.id = t.id || ('t' + Math.random().toString(36).slice(2, 7));
-    li.innerHTML =
-      '<button class="card__main" type="button">' +
-        '<svg class="icon card__status" role="img" aria-label="' + (t.status === 'failed' ? 'Failed' : 'Completed') + '"><use href="#' + (t.status === 'failed' ? 'i-circle-x' : 'i-circle-check') + '"/></svg>' +
-        '<span class="card__body"><span class="card__line"><span class="card__title">' + esc(t.title) + '</span><span class="card__dot" aria-hidden="true">&bull;</span>' +
-        '<span class="card__snippet">' + esc(t.snippet) + '</span></span>' +
-        '<span class="card__meta">' + (t.status === 'failed' ? '<b class="is-failed">Failed</b><i aria-hidden="true">&middot;</i>' : '') + '<b>' + esc(t.provider) + '</b><i aria-hidden="true">&middot;</i><span>' + esc(t.project) + '</span></span></span>' +
-        '<span class="card__end"><span class="card__time">' + esc(t.time || 'now') + '</span><span class="card__open">Open ' + svg('i-arrow-up-right') + '</span></span>' +
-      '</button>' +
-      '<button class="card__dismiss" type="button" aria-label="Dismiss ' + esc(t.title) + '">' + svg('i-x') + '</button>';
+    var main = mk('button', 'card__main'); main.type = 'button';
+    var st = icon(t.status === 'failed' ? 'i-circle-x' : 'i-circle-check', 'card__status');
+    st.setAttribute('role', 'img'); st.setAttribute('aria-label', t.status === 'failed' ? 'Failed' : 'Completed');
+    var body = mk('span', 'card__body'), line = mk('span', 'card__line');
+    var dot = mk('span', 'card__dot', '\u2022'); dot.setAttribute('aria-hidden', 'true');
+    line.append(mk('span', 'card__title', t.title), dot, mk('span', 'card__snippet', t.snippet));
+    var meta = mk('span', 'card__meta');
+    function sep() { var i = mk('i', null, '\u00b7'); i.setAttribute('aria-hidden', 'true'); return i; }
+    if (t.status === 'failed') meta.append(mk('b', 'is-failed', 'Failed'), sep());
+    meta.append(mk('b', null, t.provider), sep(), mk('span', null, t.project));
+    body.append(line, meta);
+    var end = mk('span', 'card__end'), open = mk('span', 'card__open', 'Open ');
+    open.append(icon('i-arrow-up-right'));
+    end.append(mk('span', 'card__time', t.time || 'now'), open);
+    main.append(st, body, end);
+    var dis = mk('button', 'card__dismiss'); dis.type = 'button'; dis.setAttribute('aria-label', 'Dismiss ' + t.title); dis.append(icon('i-x'));
+    li.append(main, dis);
     li._t = t;
     this.root.append(li);
     return li;
@@ -348,6 +360,7 @@
   Stack.prototype.log = function (m) { if (this.logEl) this.logEl.textContent = m; };
   Stack.prototype.render = function () {
     var self = this, n = this.cards.length;
+    var hadFocus = this.root.contains(document.activeElement);   /* focus inside the stack must follow the front card */
     this.cards.forEach(function (c, i) {
       var rel = i - self.cur;
       c.dataset.d = rel < 0 ? 'passed' : rel > 3 ? 'far' : String(rel);
@@ -364,6 +377,10 @@
     this.nav.querySelector('[data-act="prev"]').disabled = this.cur <= 0;
     this.nav.querySelector('[data-act="next"]').disabled = this.cur >= n - 1;
     if (front) count.setAttribute('aria-label', 'Card ' + (this.cur + 1) + ' of ' + n + ': ' + front._t.title + ', ' + front.dataset.status);
+    if (hadFocus && front) front.querySelector('.card__main').focus({ preventScroll: true });
+  };
+  Stack.prototype.open = function () {
+    var li = this.cards[this.cur]; if (li) this.log('Opening t3code://threads/<environment-id>/' + li.dataset.id);
   };
   Stack.prototype.go = function (i) {
     var n = this.cards.length; if (!n) return;
@@ -407,6 +424,8 @@
       if (e.key === KEYS.next) { s.go(s.cur + 1); cap = 'next'; }
       else if (e.key === KEYS.prev) { s.go(s.cur - 1); cap = 'prev'; }
       else if (e.key === KEYS.dismiss || e.key === 'Escape') { s.dismiss(s.cur); }
+      else if (e.key === 'Enter' && !s.root.contains(document.activeElement) && !s.nav.contains(document.activeElement)) { s.open(); }
+      else if (e.key === 'Enter' && !s.root.contains(document.activeElement) && !s.nav.contains(document.activeElement)) { s.open(); }
       else return;
       e.preventDefault();
       if (cap) {

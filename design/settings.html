@@ -62,14 +62,15 @@
   .nav-item:hover { background: var(--sidebar-row-hover); color: var(--sidebar-foreground); }
   .nav-item:active { background: var(--sidebar-row-active); }
   .nav-item:hover .icon, .nav-item[aria-selected="true"] .icon, .nav-item.is-active .icon { color: var(--sidebar-foreground); }
-  .nav-item[aria-selected="true"], .nav-item.is-active { background: var(--sidebar-row-selected); font-weight: var(--weight-medium); color: var(--sidebar-foreground); }
+  .nav-item[aria-selected="true"], .nav-item.is-active { background: var(--sidebar-row-selected); box-shadow: inset 0 0 0 1px var(--border-strong); font-weight: var(--weight-medium); color: var(--sidebar-foreground); }
   .nav-item:focus-visible { box-shadow: inset 0 0 0 2px var(--ring); }
+  .pet-tile .pet-wrap, .pet-tile .pet { display: block; }
   .side__spacer { flex: 1; }
   .side__results { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
   .side__results .nav-item { height: auto; min-height: 40px; align-items: flex-start; }
   .nav-item__text { min-width: 0; display: flex; flex-direction: column; }
   .nav-item__title { font-weight: var(--weight-medium); color: var(--sidebar-foreground); }
-  .nav-item__sec { font-size: 11px; color: color-mix(in srgb, var(--sidebar-muted-foreground) 85%, transparent); }
+  .nav-item__sec { font-size: 11px; color: var(--sidebar-muted-foreground); }
   .side__empty { margin: 0; padding: var(--space-5) var(--space-2); text-align: center; font-size: var(--text-sm); color: var(--sidebar-muted-foreground); }
   mark { background: color-mix(in srgb, var(--primary) 24%, transparent); color: inherit; border-radius: 2px; }
   .row.is-hit, .group.is-hit { box-shadow: inset 0 0 0 2px var(--primary); background: var(--chip-active); border-radius: var(--radius-md); }
@@ -116,7 +117,7 @@
   .hue1 .pet { filter: hue-rotate(150deg) saturate(1.2); } .hue2 .pet { filter: hue-rotate(260deg); } .hue3 .pet { filter: grayscale(0.9) brightness(1.1); }
 
   .key { all: unset; box-sizing: border-box; cursor: pointer; min-width: 84px; padding: 6px 10px; text-align: center; border-radius: var(--radius-md);
-    border: 1px solid var(--input); background: var(--control-surface); font: var(--weight-medium) var(--text-sm)/1.2 var(--font-mono); }
+    border: 1px solid var(--border-strong); background: var(--control-surface); font: var(--weight-medium) var(--text-sm)/1.2 var(--font-mono); }
   .key:hover { background: var(--control-surface-hover); }
   .key[data-listening="true"] { border-color: var(--primary); color: var(--muted-foreground); font-family: var(--font-sans); }
   .key[data-conflict="true"] { border-color: var(--error); }
@@ -229,10 +230,10 @@
         <h2>Pets</h2>
         <div class="group">
           <div class="pets" role="radiogroup" aria-label="Choose your pet" id="pet-picker">
-            <button class="pet-tile" role="radio" aria-checked="true" tabindex="0" type="button"><div class="pet-wrap"><div class="pet"></div></div><span class="pet-tile__name">Boba</span></button>
-            <button class="pet-tile hue1" role="radio" aria-checked="false" tabindex="-1" type="button"><div class="pet-wrap"><div class="pet"></div></div><span class="pet-tile__name">Sprout</span></button>
-            <button class="pet-tile hue2" role="radio" aria-checked="false" tabindex="-1" type="button"><div class="pet-wrap"><div class="pet"></div></div><span class="pet-tile__name">Ember</span></button>
-            <button class="pet-tile hue3" role="radio" aria-checked="false" tabindex="-1" type="button"><div class="pet-wrap"><div class="pet"></div></div><span class="pet-tile__name">Pebble</span></button>
+            <button class="pet-tile" role="radio" aria-checked="true" tabindex="0" type="button"><span class="pet-wrap"><span class="pet"></span></span><span class="pet-tile__name">Boba</span></button>
+            <button class="pet-tile hue1" role="radio" aria-checked="false" tabindex="-1" type="button"><span class="pet-wrap"><span class="pet"></span></span><span class="pet-tile__name">Sprout</span></button>
+            <button class="pet-tile hue2" role="radio" aria-checked="false" tabindex="-1" type="button"><span class="pet-wrap"><span class="pet"></span></span><span class="pet-tile__name">Ember</span></button>
+            <button class="pet-tile hue3" role="radio" aria-checked="false" tabindex="-1" type="button"><span class="pet-wrap"><span class="pet"></span></span><span class="pet-tile__name">Pebble</span></button>
             <button class="pet-tile pet-tile--add" type="button"><svg class="icon"><use href="#i-plus"/></svg>Add a pet folder</button>
           </div>
           <p class="note"><svg class="icon"><use href="#i-info"/></svg><span>Pets are read from <code>~/.petdex/pets</code>. Each folder needs a <code>pet.json</code> and a spritesheet.</span></p>
@@ -336,7 +337,7 @@
 (function () {
   var root = document.documentElement;
 
-  /* Sections: vertical tab list on the right */
+  /* Sections: vertical tab list in the left sidebar */
   var tabs = Array.prototype.slice.call(document.querySelectorAll('#side [role="tab"]'));
   function show(tab, focus) {
     tabs.forEach(function (t) {
@@ -374,9 +375,11 @@
   index.push({ el: document.getElementById('pet-picker').parentNode, pane: document.getElementById('p-pets'), tab: document.getElementById('t-pets'), title: 'Choose your pet', hint: 'boba sprout ember pebble folder', section: 'Pets' });
   function esc(x) { var d = document.createElement('div'); d.textContent = x; return d.innerHTML; }
   function mark(text, words) {
-    var out = esc(text);
-    words.forEach(function (w) { out = out.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>'); });
-    return out;
+    var parts = words.slice().sort(function (x, y) { return y.length - x.length; })
+      .map(function (w) { return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); });
+    var re = new RegExp('(' + parts.join('|') + ')', 'ig');
+    /* split() with one capture group puts matches at odd indexes; every piece is escaped on its own */
+    return text.split(re).map(function (piece, i) { return i % 2 ? '<mark>' + esc(piece) + '</mark>' : esc(piece); }).join('');
   }
   function clearHits() { document.querySelectorAll('.is-hit').forEach(function (n) { n.classList.remove('is-hit'); }); }
   function go(item) {
@@ -419,18 +422,35 @@
     if (e.key === '/' && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName) && document.activeElement.dataset.listening !== 'true') { e.preventDefault(); q.focus(); }
   });
 
+  /* Radio groups: one Tab stop per group, arrow keys move and select */
+  function radios(group, onPick) {
+    var items = Array.prototype.slice.call(group.querySelectorAll('[role="radio"]'));
+    function sync() { items.forEach(function (o) { o.tabIndex = o.getAttribute('aria-checked') === 'true' ? 0 : -1; }); }
+    function pick(t, focus) {
+      items.forEach(function (o) { o.setAttribute('aria-checked', String(o === t)); });
+      sync(); if (focus) t.focus(); if (onPick) onPick(t);
+    }
+    items.forEach(function (t, i) {
+      t.addEventListener('click', function () { pick(t, false); });
+      t.addEventListener('keydown', function (e) {
+        var d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]; if (!d) return;
+        e.preventDefault(); pick(items[(i + d + items.length) % items.length], true);
+      });
+    });
+    sync();
+    return { items: items, sync: sync };
+  }
+
   /* Theme control (Match system, Light, Dark) */
-  var themeBtns = document.querySelectorAll('[data-theme-set]');
+  var themeGroup = radios(document.getElementById('theme-seg'), function (b) {
+    var v = b.dataset.themeSet;
+    if (v === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', v);
+  });
   function syncTheme() {
     var cur = root.getAttribute('data-theme') || 'auto';
-    themeBtns.forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.themeSet === cur)); });
+    themeGroup.items.forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.themeSet === cur)); });
+    themeGroup.sync();
   }
-  themeBtns.forEach(function (b) {
-    b.addEventListener('click', function () {
-      var v = b.dataset.themeSet;
-      if (v === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', v);
-    });
-  });
   new MutationObserver(syncTheme).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
   syncTheme();
 
@@ -453,24 +473,8 @@
     b.addEventListener('click', function () { max = Math.max(2, Math.min(8, max + (i ? 1 : -1))); out.textContent = max; });
   });
 
-  var tiles = Array.prototype.slice.call(document.querySelectorAll('#pet-picker [role="radio"]'));
-  function pick(t) { tiles.forEach(function (o) { var on = o === t; o.setAttribute('aria-checked', String(on)); o.tabIndex = on ? 0 : -1; }); t.focus(); }
-  tiles.forEach(function (t, i) {
-    t.addEventListener('click', function () { pick(t); });
-    t.addEventListener('keydown', function (e) {
-      var d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]; if (!d) return;
-      e.preventDefault(); pick(tiles[(i + d + tiles.length) % tiles.length]);
-    });
-  });
-
-  var poll = document.querySelectorAll('#poll [role="radio"]');
-  poll.forEach(function (b) {
-    b.addEventListener('click', function () {
-      poll.forEach(function (o) { o.setAttribute('aria-checked', String(o === b)); });
-      document.getElementById('poll-hint').textContent = b.dataset.hint;
-    });
-  });
-  themeBtns.forEach(function () {});
+  radios(document.getElementById('pet-picker'));
+  radios(document.getElementById('poll'), function (b) { document.getElementById('poll-hint').textContent = b.dataset.hint; });
 
   var r = document.getElementById('radius'), ring = document.getElementById('ring'), tag = document.getElementById('radius-tag');
   function setR() { var v = +r.value; ring.style.width = ring.style.height = Math.min(v, 330) * 0.78 + 'px'; tag.textContent = v + ' px'; r.setAttribute('aria-valuetext', v + ' pixels'); }

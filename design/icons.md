@@ -26,9 +26,8 @@ Caveat: the paths were typed from memory of the Lucide set, not copied from the 
 | layers | Cards section | settings.html |
 | keyboard | Keyboard section | settings.html |
 | palette | Appearance section | settings.html |
-| info | About section; notes | settings.html |
+| info | About section; settings notes | settings.html |
 | search | Settings search field | settings.html |
 | minus, square, x | Window controls; clear search | settings.html |
 | rotate-ccw | Reset keybind | settings.html |
 | plus | Add a pet folder | settings.html |
-| info | Settings notes | settings.html |

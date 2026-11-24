@@ -1,6 +1,6 @@
 # T3 Pet overlay: design notes
 
-Files: `tokens.css` (all colours, radii, blur, spacing, motion), `pet.css` (pet, pill, card, stack), `pet-ui.html` (states, card anatomy, live stack demo), `settings.html`. Plain HTML/CSS/vanilla JS, no build step, no network at runtime. Screenshots: `pet-ui-light.png`, `pet-ui-dark.png`, `settings-light.png`, `settings-dark.png`.
+Files: `tokens.css` (all colours, radii, blur, spacing, motion), `pet.css` (pet, pill, card, stack), `pet-ui.html` (states, card anatomy, live stack demo), `settings.html`. Plain HTML/CSS/vanilla JS, no build step, no network at runtime. Screenshots (`pet-ui-*.png`, `settings-*.png`, `context-menu.png`) are local only: they are git-ignored and not part of the committed design.
 
 ## Direction
 
@@ -43,9 +43,9 @@ Tokens: `--dur-move` 240ms, `--dur-fade` 160ms, `--dur-fast` 120ms, `--ease-out`
 
 ## Accessibility
 
-Contrast, computed for the worst plausible case (88% card over a mid-tone wallpaper): light title 16:1, light snippet 7.1:1 (zinc-500 would be 4.5:1), dark title 15:1, dark snippet 6.6:1, pill icons 11:1 and pill muted text 4.8:1 over a pale wallpaper. Badge is dark on emerald-400, 7.9:1 (white on emerald-500 would be 2.5:1). Status icons use T3's `-foreground` green and red (the plain green is 2.3:1 on a light card). Not checked: very bright or very busy wallpapers; the glass is dense (88%) to cover this, but test with real desktops.
+Contrast, computed for the worst plausible case (88% card or pill over a mid-tone wallpaper): light title and pill icons 16:1, light snippet 7.1:1 (zinc-500 would be 4.5:1), dark title and pill icons 15:1, dark snippet 6.6:1. The pill uses the same foreground and glass as the cards, so it has the same numbers. Badge is dark on emerald-400, 7.9:1 (white on emerald-500 would be 2.5:1). Status icons use T3's `-foreground` green and red (the plain green is 2.3:1 on a light card). Settings: the sidebar section label under search results uses `--sidebar-muted-foreground` (4.6:1 on the light sidebar). Control edges that carry meaning (switch off track, key-capture border, selected sidebar row) use `--border-strong`, about 3.2:1 to 3.8:1 against their surroundings, instead of the faint palette borders (about 1.0 to 1.7:1). Not checked: very bright or very busy wallpapers; the glass is dense (88%) to cover this, but test with real desktops.
 
-Focus: every control shows a two-tone ring (background gap, then primary), and white-on-black inside the pill. Never colour-only: status has an icon and an accessible name ("Completed", "Failed"). Keyboard: Tab reaches the pill, the front card and its dismiss button; Up/Down (rebindable) browse; Enter opens; Delete or Esc dismisses; back cards are `aria-hidden` and untabbable. The "n / total" count is a polite live region with the thread title and status. Pet picker and polling choice are radio groups with arrow keys; toggles are `role="switch"`. Because the overlay window is non-focusable in the current t3-pet, keyboard focus needs a decision (open question).
+Focus: every control shows a two-tone ring (background gap, then primary), and the same ring inside the pill (it follows the theme). Never colour-only: status has an icon and an accessible name ("Completed", "Failed"). Keyboard: Tab reaches the pill, the front card and its dismiss button; Up/Down (rebindable) browse; Enter opens; Delete or Esc dismisses; back cards are `aria-hidden` and untabbable. The "n / total" count is a polite live region with the thread title and status. Pet picker and polling choice are radio groups with arrow keys; toggles are `role="switch"`. Because the overlay window is non-focusable in the current t3-pet, keyboard focus needs a decision (open question).
 
 ## Open questions
 
@@ -61,11 +61,11 @@ Small tweaks only; structure, glass look and T3 tokens are unchanged.
 - Voice button removed. The compose button is now "Open T3 Code" (Lucide external-link). Pill is now open + bell (expanded: open + chevron).
 - Cards show a quiet second line: provider (Claude or Codex), then project name; failed cards lead it with "Failed" in red. Toggle in settings ("Show provider and project").
 - Differences from the reference: 1.75px icon strokes, 12px card radius (T3 xl), 38px pill, a rounded-square count badge (5px radius) instead of a round one, 13px title with 12.5px snippet and 11px meta and time, 14px card padding.
-- Pill kept dark in both themes (see above).
+- The pill was dark in both themes in this revision; part 2 below supersedes that, and it now follows the theme.
 
 ### Revision 2, part 2 (direction from the user)
 - Settings is a real window (title bar, controls) with section navigation and six panes (the sidebar moved to the left in revision 3); the settings content was regrouped into them. A gear in the pill opens it.
-- Right-click menu on the pet or pill, in light and dark, built from the card tokens: Open T3 Code, Mark all read, Pet it, Go to sleep / Wake, Pause pet / Resume, Switch pet (submenu arrow), Settings, Quit. One row shows the keyboard-focus state (inset ring). The menu is keyboard operable (Up, Down, Enter).
+- Right-click menu on the pet or pill, in light and dark, built from the card tokens. This was the revision 2 list (it also had Go to sleep / Wake); revision 3 below has the current 7 items. One row shows the keyboard-focus state (inset ring). The menu is keyboard operable (Up, Down, Enter).
 - Pill now follows the theme (answers the earlier open question about a dark pill). Its tokens derive from the card tokens, and the badge ring and dismiss badge follow the theme too.
 - Expand and collapse is kept as in the first version (scaled-back direction): the bell shows the unread count; clicking it swaps it for a chevron that collapses the stack, and the count moves to the n / total control. A gear sits beside it.
 - Themes: light and dark plus Match system; custom and imported theme wording removed. Colours now come from T3's built-in palettes (table above).
@@ -73,11 +73,18 @@ Small tweaks only; structure, glass look and T3 tokens are unchanged.
 
 ## What changed in revision 3
 
-- Context menu: "Hide for 1 hour" and "Go to sleep" removed (7 items now: Open T3 Code, Mark all read, Pet it, Pause pet / Resume, Switch pet, Settings, Quit). The pet already falls asleep by itself after 30 seconds of inactivity, so Pause is the only switch. The context-menu screenshot in the local design folder still shows the old 8-item menu; re-capture it if you need it.
+- Context menu: "Hide for 1 hour" and "Go to sleep" removed (7 items now: Open T3 Code, Mark all read, Pet it, Pause pet / Resume, Switch pet, Settings, Quit). The pet already falls asleep by itself after 30 seconds of inactivity, so Pause is the only switch.
 - Check interval: the "Live" option and all wording about live or push updates are gone. The control offers 1 s, 5 s and 30 s, default 1 s. Helper text describes only how soon cards appear.
 - Settings navigation moved to the left, matching T3's own settings sidebar (read from `apps/web/src/components/settings/SettingsSidebarNav.tsx` and `components/ui/sidebar.tsx` in `pingdotgg/t3code`, read-only, 24/11/2026).
   - Matched: 240px sidebar with a right border; 8px padding; 32px rows with 8px icon gap and 16px icons in the muted icon colour; selected row uses the `sidebarRowSelected` fill and medium weight with the icon turning to the foreground colour; hover uses `sidebarRowHover`; pressed uses `sidebarRowActive`; inset 2px focus ring; search field is a 32px row with a search icon, "Search" placeholder, a "/" key hint that becomes a clear (x) button while typing; results replace the section list as a listbox with icon, title and section name (40px minimum row); empty state is centred small muted text; `/` focuses the search, Up, Down, Enter and Esc work inside it.
   - Tokens: the eight `sidebar*` roles from T3's palettes (`sidebar`, `sidebarForeground`, `sidebarMutedForeground`, `sidebarRowHover`, `sidebarRowActive`, `sidebarRowSelected`, `sidebarBorder`, plus the icon colour, which T3 sets to the muted foreground).
   - Not matched: T3's collapsed icon rail below the `md` breakpoint (this window becomes a top strip when narrow); its section group headings; its account footer.
   - Mine: matched text is marked, and opening a result shows the section with the row outlined in the primary colour. Empty state reads "No settings match".
-- Screenshots added: `settings-search-light.png` (query "card", second result opened, row highlighted) and `settings-search-empty-dark.png`. `context-menu.png` is re-captured.
+- Screenshots added: `settings-search-light.png` (query "card", second result opened, row highlighted) and `settings-search-empty-dark.png`. `context-menu.png` is re-captured for the 7-item menu.
+
+### Revision 3 review fixes
+- Card text is never parsed as HTML: cards are built with `createElement`, `textContent` and `setAttribute` (a title containing a quote cannot break the dismiss button's `aria-label`). Safe to lift into the Electron renderer.
+- Focus follows the front card: when focus is inside the stack, Down, Up and Delete move it to the new front card, so Enter always acts on the visible card. With only the pointer over the stack, Enter opens the front card.
+- Settings search highlighting uses one combined pattern over the raw text, with each piece escaped, so queries such as "show a", "pet a" and "ar" cannot break the markup.
+- The check-interval and theme controls are radio groups with a single Tab stop and arrow-key selection, sharing one helper with the pet picker.
+- Pet tiles use `span`s inside their buttons (valid HTML). Leftover unused icon, comments and a no-op loop removed.

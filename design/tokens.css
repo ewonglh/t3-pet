@@ -57,6 +57,7 @@
   --accent-foreground: #18181b;
   --border: #e4e4e7;                        /* zinc-200 */
   --input: #d4d4d8;                         /* zinc-300 */
+  --border-strong: #8b8b93;                 /* [approx] about 3:1 on white and the light sidebar: control edges, switch track */
   --primary: #1b4ed8;                       /* [palette] accent */
   --primary-foreground: #ffffff;
   --ring: var(--primary);
@@ -101,7 +102,7 @@
   /* Controls */
   --control-surface: color-mix(in srgb, var(--foreground) 5%, transparent);
   --control-surface-hover: color-mix(in srgb, var(--foreground) 9%, transparent);
-  --switch-off: #d4d4d8;
+  --switch-off: var(--border-strong);
   --focus-ring: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
 
   /* Spacing (4px base) */
@@ -167,6 +168,7 @@
   --sidebar-row-active: #1a1b1b;
   --sidebar-row-selected: #111111;
   --sidebar-border: #141414;
+  --border-strong: #6f6f6f;                 /* [approx] about 3.5:1 on #111: control edges, switch track */
   --card-border: rgb(255 255 255 / 10%);    /* [approx] visible edge on glass; palette border (#191919) is too faint over wallpapers */
   --card-highlight: inset 0 1px 0 rgb(255 255 255 / 7%);
   --card-shadow: 0 14px 32px -16px rgb(0 0 0 / 80%), 0 2px 6px -2px rgb(0 0 0 / 50%);
@@ -174,7 +176,7 @@
   --pill-shadow: 0 12px 28px -12px rgb(0 0 0 / 70%);
   --control-surface: rgb(255 255 255 / 6%);
   --control-surface-hover: rgb(255 255 255 / 11%);
-  --switch-off: rgb(255 255 255 / 18%);
+  --switch-off: var(--border-strong);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -207,6 +209,7 @@
     --sidebar-row-active: #1a1b1b;
     --sidebar-row-selected: #111111;
     --sidebar-border: #141414;
+    --border-strong: #6f6f6f;
     --card-border: rgb(255 255 255 / 10%);    /* [approx] visible edge on glass; palette border (#191919) is too faint over wallpapers */
     --card-highlight: inset 0 1px 0 rgb(255 255 255 / 7%);
     --card-shadow: 0 14px 32px -16px rgb(0 0 0 / 80%), 0 2px 6px -2px rgb(0 0 0 / 50%);
@@ -214,7 +217,7 @@
     --pill-shadow: 0 12px 28px -12px rgb(0 0 0 / 70%);
     --control-surface: rgb(255 255 255 / 6%);
     --control-surface-hover: rgb(255 255 255 / 11%);
-    --switch-off: rgb(255 255 255 / 18%);
+    --switch-off: var(--border-strong);
   }
 }
 
