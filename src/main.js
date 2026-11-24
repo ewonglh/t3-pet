@@ -3,9 +3,11 @@
 // the cursor position and T3 Code's status, and owns the tray menu and the demo hotkeys.
 'use strict';
 const path = require('node:path');
-const { app, BrowserWindow, screen, ipcMain, Tray, Menu, globalShortcut } = require('electron');
+const { app, BrowserWindow, screen, ipcMain, Tray, Menu, globalShortcut, shell } = require('electron');
 const { T3Status } = require('./status/t3-status');
+const { readEnvironmentId } = require('./status/environment');
 const { trayImage } = require('./main/icon');
+const { buildThreadLink } = require('./main/thread-link');
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -184,7 +186,26 @@ function registerHotkeys() {
   }
 }
 
+// ---- open thread --------------------------------------------------------------------------
+// Opens the thread behind the current status in the T3 Code desktop app. The thread id comes
+// from our own status, never from the renderer. Forced (hotkey) statuses have none.
+function openThread() {
+  const link = buildThreadLink({
+    scheme: process.env.T3PET_SCHEME || 't3code', // t3code-dev for a dev build of T3 Code
+    environmentId: readEnvironmentId(),
+    threadId: effectiveStatus().threadId,
+  });
+  if (!link) {
+    console.log('[t3-pet] nothing to open: no thread for this status, or no environment id');
+    return;
+  }
+  shell.openExternal(link).catch((err) => console.log(`[t3-pet] could not open the thread link: ${err.message}`));
+}
+
 // ---- ipc ----------------------------------------------------------------------------------
+ipcMain.on('open-thread', (e) => {
+  if (win && e.sender === win.webContents) openThread();
+});
 ipcMain.on('clickable', (e, on) => {
   if (win && e.sender === win.webContents) win.setIgnoreMouseEvents(!on, { forward: true });
 });

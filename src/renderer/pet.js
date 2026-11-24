@@ -128,7 +128,14 @@
       if (!d.moved && quick) {
         this.mode = d.palt > 1 ? 'fall' : 'ground';
         this.x = d.px; this.alt = d.palt; this.vy = 0;
-        this.poke();
+        // A click while a thread status is showing opens that thread (and is a friendly pet,
+        // never a poke). With nothing to open it is a poke, as before.
+        if (this.status.state !== 'idle' && this.status.threadId && this.host.openThread) {
+          this.pet();
+          this.host.openThread();
+        } else {
+          this.poke();
+        }
       } else {
         this.mode = 'fall'; this.timers.fall = 0;
         this.vx = clamp(d.vx * 0.6, -1400, 1400);
@@ -143,7 +150,7 @@
       const key = (s && s.key) || state + ':' + ((s && s.title) || '');
       if (key !== this.status.key || state !== this.status.state) {
         const changed = state !== this.status.state;
-        this.status = { state, title: (s && s.title) || '', key, since: performance.now() };
+        this.status = { state, title: (s && s.title) || '', key, since: performance.now(), threadId: (s && s.threadId) || null };
         if (state !== 'idle') this.captionUntil = performance.now() + CFG.captionMs;
         if (changed) this.popBubble();
         if (state !== 'idle' && this.asleep) this.wakeUp(true);
