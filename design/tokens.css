@@ -1,0 +1,196 @@
+/*
+ * T3 Pet design tokens.
+ *
+ * Source: pingdotgg/t3code, apps/web/src/index.css (default branch, read 24/11/2026).
+ * Values marked [T3] are copied from there (Tailwind palette values resolved to hex
+ * or oklch). Values marked [approx] are this design's own additions or adjustments.
+ * Light is the default. Dark applies when data-theme="dark", or when the OS is dark
+ * and data-theme is not "light" (so an Electron renderer can set data-theme from T3's
+ * active theme, or leave it unset to follow the OS).
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Type [T3: --font-sans / --font-mono] */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Inter Variable", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-lg: 15px;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* Radius [T3: --radius 0.5rem; sm/md/lg/xl derived the same way] */
+  --radius: 0.5rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-card: 14px; /* [approx] pet cards sit between T3 xl (12px) and the reference's rounder cards */
+  --radius-pill: 999px;
+
+  /* Glass [T3: --glass-blur 12px, --glass-opacity 80%, --glass-saturation 1.14] */
+  --glass-blur: 12px;
+  --glass-opacity: 80%;
+  --glass-saturation: 1.14;
+  --glass-opacity-card: 88%; /* [approx] a little denser than T3 so text stays legible over busy wallpapers */
+
+  /* Colour: neutrals [T3: light theme] */
+  --background: oklch(99.2% 0 0);          /* zinc-25 */
+  --foreground: #18181b;                    /* zinc-900 */
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --popover: #ffffff;
+  --popover-foreground: #18181b;
+  --muted: #fafafa;                         /* zinc-50 */
+  --muted-foreground: #52525b;              /* [approx] zinc-600; T3 uses zinc-500 (#71717a), too faint on glass */
+  --accent: #f4f4f5;                        /* zinc-100 */
+  --accent-foreground: #18181b;
+  --border: #e4e4e7;                        /* zinc-200 */
+  --input: #d4d4d8;                         /* zinc-300 */
+  --primary: oklch(0.488 0.217 264);
+  --primary-foreground: #ffffff;
+  --ring: var(--primary);
+
+  /* Status [T3] */
+  --success: #10b981;                       /* emerald-500 */
+  --success-foreground: #047857;            /* emerald-700 */
+  --error: #ef4444;                         /* red-500 */
+  --error-foreground: #b91c1c;              /* red-700 */
+
+  /* Pet surfaces [approx: derived from the tokens above] */
+  --card-surface: color-mix(in srgb, var(--popover) var(--glass-opacity-card), transparent);
+  --card-border: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --card-highlight: inset 0 1px 0 rgb(255 255 255 / 60%);
+  --card-shadow: 0 10px 28px -12px rgb(24 24 27 / 38%), 0 2px 6px -2px rgb(24 24 27 / 18%);
+  --card-hover-surface: color-mix(in srgb, var(--popover) 96%, transparent);
+
+  /* The pill is dark in both themes (matches the reference): it floats over any wallpaper. */
+  --pill-surface: color-mix(in srgb, #0a0a0a 80%, transparent);
+  --pill-border: rgb(255 255 255 / 10%);
+  --pill-foreground: #f5f5f5;               /* neutral-100 */
+  --pill-muted: #a3a3a3;                    /* neutral-400 */
+  --pill-hover: rgb(255 255 255 / 12%);
+  --pill-divider: rgb(255 255 255 / 14%);
+  --pill-shadow: 0 12px 28px -12px rgb(0 0 0 / 60%);
+
+  /* Badge: dark text on emerald-400 gives ~9:1; white on emerald-500 would be ~2.5:1 */
+  --badge-bg: #34d399;                      /* emerald-400 */
+  --badge-fg: #022c22;                      /* emerald-950 */
+
+  /* Controls */
+  --control-surface: color-mix(in srgb, var(--foreground) 5%, transparent);
+  --control-surface-hover: color-mix(in srgb, var(--foreground) 9%, transparent);
+  --switch-off: #d4d4d8;
+  --focus-ring: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+
+  /* Spacing (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Pet geometry. Sheet frames are 192x208; shown at 0.5 scale. */
+  --pet-frame-w: 192;
+  --pet-frame-h: 208;
+  --pet-scale: 0.5;
+  --pet-w: calc(var(--pet-frame-w) * var(--pet-scale) * 1px);
+  --pet-h: calc(var(--pet-frame-h) * var(--pet-scale) * 1px);
+  --pill-height: 40px;
+  --pill-button: 32px;
+  --card-width: 384px;
+  --card-height: 52px;
+
+  /* Stack depth */
+  --stack-step-y: 9px;
+  --stack-step-scale: 0.045;
+  --stack-step-fade: 0.3;
+
+  /* Motion. Durations split by kind so reduced motion can zero the movement but keep fades. */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-move: 240ms;
+  --dur-fade: 160ms;
+}
+
+/* Dark [T3: dark theme] */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --glass-blur: 16px;                       /* [T3] dark override */
+  --glass-saturation: 1.08;                 /* [T3] dark override */
+  --background: #000000;
+  --foreground: #f5f5f5;                    /* neutral-100 */
+  --card: color-mix(in srgb, #0a0a0a 97%, #ffffff);
+  --card-foreground: #f5f5f5;
+  --popover: color-mix(in srgb, #0a0a0a 97%, #ffffff);
+  --popover-foreground: #f5f5f5;
+  --muted: rgb(255 255 255 / 3%);
+  --muted-foreground: #a3a3a3;              /* neutral-400 */
+  --accent: rgb(255 255 255 / 4%);
+  --accent-foreground: #f5f5f5;
+  --border: rgb(255 255 255 / 8%);
+  --input: rgb(255 255 255 / 11%);
+  --primary: oklch(0.571 0.21 264);
+  --success-foreground: #34d399;            /* emerald-400 */
+  --error: color-mix(in srgb, #ef4444 90%, #ffffff);
+  --error-foreground: #f87171;              /* red-400 */
+
+  --card-border: rgb(255 255 255 / 10%);
+  --card-highlight: inset 0 1px 0 rgb(255 255 255 / 7%);
+  --card-shadow: 0 14px 32px -16px rgb(0 0 0 / 80%), 0 2px 6px -2px rgb(0 0 0 / 50%);
+  --card-hover-surface: color-mix(in srgb, #141414 94%, transparent);
+  --control-surface: rgb(255 255 255 / 6%);
+  --control-surface-hover: rgb(255 255 255 / 11%);
+  --switch-off: rgb(255 255 255 / 18%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --glass-blur: 16px;
+    --glass-saturation: 1.08;
+    --background: #000000;
+    --foreground: #f5f5f5;
+    --card: color-mix(in srgb, #0a0a0a 97%, #ffffff);
+    --card-foreground: #f5f5f5;
+    --popover: color-mix(in srgb, #0a0a0a 97%, #ffffff);
+    --popover-foreground: #f5f5f5;
+    --muted: rgb(255 255 255 / 3%);
+    --muted-foreground: #a3a3a3;
+    --accent: rgb(255 255 255 / 4%);
+    --accent-foreground: #f5f5f5;
+    --border: rgb(255 255 255 / 8%);
+    --input: rgb(255 255 255 / 11%);
+    --primary: oklch(0.571 0.21 264);
+    --success-foreground: #34d399;
+    --error: color-mix(in srgb, #ef4444 90%, #ffffff);
+    --error-foreground: #f87171;
+    --card-border: rgb(255 255 255 / 10%);
+    --card-highlight: inset 0 1px 0 rgb(255 255 255 / 7%);
+    --card-shadow: 0 14px 32px -16px rgb(0 0 0 / 80%), 0 2px 6px -2px rgb(0 0 0 / 50%);
+    --card-hover-surface: color-mix(in srgb, #141414 94%, transparent);
+    --control-surface: rgb(255 255 255 / 6%);
+    --control-surface-hover: rgb(255 255 255 / 11%);
+    --switch-off: rgb(255 255 255 / 18%);
+  }
+}
+
+/* Reduced motion: movement off, short fades kept. data-motion="reduce" lets a demo force it. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-move: 0ms;
+    --dur-fast: 0ms;
+    --dur-fade: 120ms;
+  }
+}
+:root[data-motion="reduce"] {
+  --dur-move: 0ms;
+  --dur-fast: 0ms;
+  --dur-fade: 120ms;
+}

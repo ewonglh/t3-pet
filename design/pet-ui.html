@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T3 Pet overlay mockups</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="pet.css">
+<style>
+  html { background: var(--background); }
+  body { margin: 0; color: var(--foreground); background: var(--background); font: var(--weight-regular) var(--text-base)/1.5 var(--font-sans); }
+  .page { max-width: 1400px; margin: 0 auto; padding: var(--space-5) var(--space-4) 64px; }
+  header.top { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; justify-content: space-between; margin-bottom: var(--space-5); }
+  h1 { margin: 0; font-size: 20px; font-weight: var(--weight-semibold); letter-spacing: -0.01em; }
+  h2 { margin: var(--space-6) 0 var(--space-3); font-size: var(--text-lg); font-weight: var(--weight-semibold); }
+  .lede { margin: 4px 0 0; color: var(--muted-foreground); max-width: 62ch; }
+  .tools { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
+  .seg { display: inline-flex; padding: 2px; border-radius: var(--radius-lg); background: var(--control-surface); }
+  .seg button, .btn {
+    font: var(--weight-medium) var(--text-sm)/1 var(--font-sans); color: var(--foreground);
+    padding: 7px 12px; border: 0; border-radius: var(--radius-md); background: transparent; cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: var(--card); box-shadow: 0 0 0 1px var(--border), 0 1px 2px rgb(0 0 0 / 8%); }
+  .btn { background: var(--control-surface); }
+  .btn:hover { background: var(--control-surface-hover); }
+  .btn[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); }
+  .seg button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 420px)); gap: var(--space-5); justify-content: start; }
+  figure { margin: 0; }
+  figcaption { margin-top: var(--space-2); max-width: 46ch; color: var(--muted-foreground); font-size: var(--text-sm); }
+  figcaption b { color: var(--foreground); font-weight: var(--weight-semibold); }
+  .stage { width: 100%; max-width: 420px; height: 420px; }
+  .stage.short { height: 150px; }
+  .stage.short .desk { padding-top: 0; justify-content: center; }
+  .states { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 420px)); gap: var(--space-4) var(--space-5); }
+  .motion { display: grid; grid-template-columns: minmax(340px, 420px) minmax(280px, 1fr); gap: var(--space-5); align-items: start; }
+  .demo-log { min-height: 1.5em; margin: var(--space-2) 0 0; font: var(--text-sm)/1.4 var(--font-mono); color: var(--muted-foreground); }
+  dl.notes { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-4); font-size: var(--text-sm); }
+  dl.notes dt { font-weight: var(--weight-semibold); }
+  dl.notes dd { margin: 0; color: var(--muted-foreground); }
+  code { font: var(--text-sm) var(--font-mono); background: var(--control-surface); padding: 1px 5px; border-radius: var(--radius-sm); color: var(--foreground); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  @media (max-width: 760px) { .motion { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- Lucide icons (ISC licence). See icons.md. -->
+  <symbol id="i-square-pen" viewBox="0 0 24 24"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></symbol>
+  <symbol id="i-audio-lines" viewBox="0 0 24 24"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></symbol>
+  <symbol id="i-chevron-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol>
+  <symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-circle-x" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></symbol>
+</svg>
+
+<div class="page">
+  <header class="top">
+    <div>
+      <h1>T3 Pet overlay</h1>
+      <p class="lede">Pet states, card anatomy and the stack. The wallpapers are stand-ins for a desktop; the glass follows the theme chosen here.</p>
+    </div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Theme" id="theme-seg">
+        <button type="button" data-theme-set="auto" aria-pressed="true">Match system</button>
+        <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
+        <button type="button" data-theme-set="dark" aria-pressed="false">Dark</button>
+      </div>
+    </div>
+  </header>
+
+  <h2>Pet states</h2>
+  <div class="grid3">
+    <figure>
+      <div class="stage wall-dusk"><div class="desk">
+        <div class="pet-wrap"><div class="pet"></div></div>
+      </div></div>
+      <figcaption><b>Idle.</b> The pet alone, no chrome. Everything else hangs off the pet, which never moves when the pill or cards appear.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="stage wall-lagoon"><div class="desk">
+        <div class="pet-wrap"><div class="pet"></div></div>
+        <div class="pill" role="toolbar" aria-label="Pet actions">
+          <button class="pill__btn" type="button" aria-label="New chat"><svg class="icon"><use href="#i-square-pen"/></svg></button>
+          <span class="pill__sep" aria-hidden="true"></span>
+          <button class="pill__btn" type="button" aria-label="Voice"><svg class="icon"><use href="#i-audio-lines"/></svg></button>
+          <span class="pill__sep" aria-hidden="true"></span>
+          <button class="pill__btn" type="button" aria-label="Show 4 completed threads" aria-expanded="false"><svg class="icon"><use href="#i-bell"/></svg><span class="pill__badge" aria-hidden="true">4</span></button>
+        </div>
+      </div></div>
+      <figcaption><b>Hovered.</b> A dark frosted pill: new chat, voice, and a bell. The green badge counts unread completions and disappears at zero.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="stage wall-night"><div class="desk">
+        <div class="pet-wrap"><div class="pet"></div></div>
+        <div class="pill" role="toolbar" aria-label="Pet actions">
+          <button class="pill__btn" type="button" aria-label="New chat"><svg class="icon"><use href="#i-square-pen"/></svg></button>
+          <span class="pill__sep" aria-hidden="true"></span>
+          <button class="pill__btn" type="button" aria-label="Voice"><svg class="icon"><use href="#i-audio-lines"/></svg></button>
+          <span class="pill__sep" aria-hidden="true"></span>
+          <button class="pill__btn" type="button" aria-label="Hide completed threads" aria-expanded="true"><svg class="icon"><use href="#i-chevron-up"/></svg></button>
+        </div>
+        <div class="stack-slot" id="static-stack"></div>
+      </div></div>
+      <figcaption><b>Expanded.</b> Chevron replaces the bell. The front card is focused (ring, dismiss badge, "Open"); 2 / 4 shows where you are in the stack, and Up and Down move through it.</figcaption>
+    </figure>
+  </div>
+
+  <h2>Card anatomy and states</h2>
+  <div class="states">
+    <figure>
+      <div class="stage wall-dusk short"><div class="desk">
+        <div class="card" data-status="done">
+          <button class="card__main" type="button" tabindex="-1">
+            <svg class="icon card__status" aria-label="Completed" role="img"><use href="#i-circle-check"/></svg>
+            <span class="card__title">Tell me a story</span><span class="card__dot" aria-hidden="true">&bull;</span>
+            <span class="card__snippet">Every night, Mina left a saucer of milk on the windowsill for the moon. Every night&hellip;</span>
+            <span class="card__end"><span class="card__time">2m</span><span class="card__open">Open <svg class="icon"><use href="#i-arrow-up-right"/></svg></span></span>
+          </button>
+        </div>
+      </div></div>
+      <figcaption><b>Completed.</b> Green tick, bold title, dot, one-line snippet that truncates with an ellipsis, relative time.</figcaption>
+    </figure>
+    <figure>
+      <div class="stage wall-lagoon short"><div class="desk">
+        <div class="card" data-status="failed">
+          <button class="card__main" type="button" tabindex="-1">
+            <svg class="icon card__status" aria-label="Failed" role="img"><use href="#i-circle-x"/></svg>
+            <span class="card__title">Refactor date helpers</span><span class="card__dot" aria-hidden="true">&bull;</span>
+            <span class="card__snippet">Stopped: the type check failed in two files and I could not fix it without changing the API.</span>
+            <span class="card__end"><span class="card__time">3h</span><span class="card__open">Open <svg class="icon"><use href="#i-arrow-up-right"/></svg></span></span>
+          </button>
+        </div>
+      </div></div>
+      <figcaption><b>Failed.</b> Same layout, red icon. The snippet leads with what stopped, so a glance is enough.</figcaption>
+    </figure>
+    <figure>
+      <div class="stage wall-night short"><div class="desk">
+        <div class="card is-hover" data-status="done">
+          <button class="card__main" type="button" tabindex="-1">
+            <svg class="icon card__status" aria-label="Completed" role="img"><use href="#i-circle-check"/></svg>
+            <span class="card__title">Fix login redirect</span><span class="card__dot" aria-hidden="true">&bull;</span>
+            <span class="card__snippet">Signed-in users now land on the page they asked for, and I added a test.</span>
+            <span class="card__end"><span class="card__time">14m</span><span class="card__open">Open <svg class="icon"><use href="#i-arrow-up-right"/></svg></span></span>
+          </button>
+          <button class="card__dismiss" type="button" tabindex="-1" aria-label="Dismiss Fix login redirect"><svg class="icon"><use href="#i-x"/></svg></button>
+        </div>
+      </div></div>
+      <figcaption><b>Hovered.</b> A small dismiss badge sits on the top-left corner. The time swaps for "Open" to say the whole card is a link to the thread.</figcaption>
+    </figure>
+    <figure>
+      <div class="stage wall-dusk short"><div class="desk">
+        <div class="card is-focus is-hover" data-status="done">
+          <button class="card__main" type="button" tabindex="-1">
+            <svg class="icon card__status" aria-label="Completed" role="img"><use href="#i-circle-check"/></svg>
+            <span class="card__title">Summarise meeting notes</span><span class="card__dot" aria-hidden="true">&bull;</span>
+            <span class="card__snippet">Three decisions, two open questions and one action for each person.</span>
+            <span class="card__end"><span class="card__time">1h</span><span class="card__open">Open <svg class="icon"><use href="#i-arrow-up-right"/></svg></span></span>
+          </button>
+          <button class="card__dismiss" type="button" tabindex="-1" aria-label="Dismiss Summarise meeting notes"><svg class="icon"><use href="#i-x"/></svg></button>
+        </div>
+      </div></div>
+      <figcaption><b>Keyboard focus.</b> A two-tone ring (background gap, then T3's primary colour) that stays visible on any wallpaper. Enter opens, Delete dismisses.</figcaption>
+    </figure>
+  </div>
+
+  <h2>Stack and motion demo</h2>
+  <div class="motion">
+    <div>
+      <div class="stage wall-lagoon" style="height:440px"><div class="desk">
+        <div class="pet-wrap"><div class="pet"></div></div>
+        <div class="pill" role="toolbar" aria-label="Pet actions">
+          <button class="pill__btn" type="button" aria-label="New chat"><svg class="icon"><use href="#i-square-pen"/></svg></button>
+          <span class="pill__sep" aria-hidden="true"></span>
+          <button class="pill__btn" type="button" aria-label="Voice"><svg class="icon"><use href="#i-audio-lines"/></svg></button>
+          <span class="pill__sep" aria-hidden="true"></span>
+          <button class="pill__btn" type="button" aria-label="Hide completed threads" aria-expanded="true"><svg class="icon"><use href="#i-chevron-up"/></svg></button>
+        </div>
+        <div class="stack-slot" id="demo-stack"></div>
+      </div></div>
+      <div class="tools" style="margin-top:var(--space-3)">
+        <button class="btn" type="button" id="add-done">Add completion</button>
+        <button class="btn" type="button" id="add-failed">Add failed run</button>
+        <button class="btn" type="button" id="dismiss">Dismiss front</button>
+        <button class="btn" type="button" id="reduce" aria-pressed="false">Reduce motion</button>
+      </div>
+      <p class="demo-log" id="log" role="status">Hover the cards, then press Up or Down.</p>
+    </div>
+
+    <div>
+      <dl class="notes">
+        <dt>Card enters</dt><dd>Drops in from 12px above at 96% scale, fades in over 160ms, settles in 240ms (<code>--ease-out</code>). The older cards shift back one step at the same time.</dd>
+        <dt>Stack shuffle</dt><dd>Down lifts the front card 14px and fades it out; the next card rises to the front. Up reverses it. Each step is one transform and one opacity transition, so it stays smooth.</dd>
+        <dt>Dismiss</dt><dd>The card fades and lifts 8px; cards behind move up. The count and badge update straight away.</dd>
+        <dt>Depth</dt><dd>Each level back moves 9px down, shrinks 4.5% and fades 30%. Back cards show only their glass edge, so text never ghosts through.</dd>
+        <dt>Hover controls</dt><dd>Dismiss badge scales in from 80%; time cross-fades to "Open" in 160ms.</dd>
+        <dt>Reduced motion</dt><dd>Movement durations drop to 0ms and only 120ms fades remain, from the OS setting or the toggle here. Nothing moves, but changes are still visible.</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+
+  /* Theme and motion switches (page chrome only) */
+  document.querySelectorAll('[data-theme-set]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = b.dataset.themeSet;
+      if (v === 'auto') root.removeAttribute('data-theme'); else root.dataset.theme = v;
+      document.querySelectorAll('[data-theme-set]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+    });
+  });
+  var reduceBtn = document.getElementById('reduce');
+  reduceBtn.addEventListener('click', function () {
+    var on = reduceBtn.getAttribute('aria-pressed') !== 'true';
+    reduceBtn.setAttribute('aria-pressed', String(on));
+    if (on) root.dataset.motion = 'reduce'; else root.removeAttribute('data-motion');
+  });
+
+  /* Fallback blob if the placeholder sheet is missing */
+  var probe = new Image();
+  probe.onerror = function () { document.querySelectorAll('.pet').forEach(function (p) { p.classList.add('is-blob'); }); };
+  probe.src = 'assets/boba-spritesheet.webp';
+
+  /* Keybinds come from settings; these are the defaults */
+  var KEYS = { prev: 'ArrowUp', next: 'ArrowDown', dismiss: 'Delete' };
+
+  var THREADS = [
+    { id: 't1', status: 'done',   title: 'Tell me a story',         time: '2m',  snippet: 'Every night, Mina left a saucer of milk on the windowsill for the moon. Every night…' },
+    { id: 't2', status: 'done',   title: 'Fix login redirect',      time: '14m', snippet: 'Signed-in users now land on the page they asked for, and I added a test.' },
+    { id: 't3', status: 'done',   title: 'Summarise meeting notes', time: '1h',  snippet: 'Three decisions, two open questions and one action for each person.' },
+    { id: 't4', status: 'failed', title: 'Refactor date helpers',   time: '3h',  snippet: 'Stopped: the type check failed in two files and I could not fix it without changing the API.' }
+  ];
+  var EXTRA = [
+    { status: 'done', title: 'Write a haiku', snippet: 'Quiet morning rain, the kettle hums to itself, steam curls toward the light.' },
+    { status: 'done', title: 'Plan a debate round', snippet: 'Three speakers a side, four-minute speeches, and a two-minute prep break in the middle.' },
+    { status: 'done', title: 'Tidy the README', snippet: 'Moved setup steps to the top and removed two sections that no longer applied.' }
+  ];
+
+  function svg(id) { return '<svg class="icon"><use href="#' + id + '"/></svg>'; }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+  function Stack(slot, o) {
+    var self = this;
+    this.cards = []; this.cur = o.current || 0; this.forceFocus = !!o.forceFocus; this.logEl = o.log;
+    this.root = document.createElement('div');
+    this.root.className = 'stack'; this.root.setAttribute('role', 'list'); this.root.setAttribute('aria-label', 'Completed threads');
+    if (o.active) this.root.setAttribute('data-active', '');
+    this.nav = document.createElement('div');
+    this.nav.className = 'stack-nav'; this.nav.setAttribute('role', 'group'); this.nav.setAttribute('aria-label', 'Browse completed threads');
+    this.nav.innerHTML =
+      '<button class="keycap" type="button" data-act="prev" aria-label="Previous card, Up arrow">' + svg('i-arrow-up') + '</button>' +
+      '<span class="stack-nav__count" aria-live="polite"></span>' +
+      '<button class="keycap" type="button" data-act="next" aria-label="Next card, Down arrow">' + svg('i-arrow-down') + '</button>';
+    slot.style.display = 'flex'; slot.style.flexDirection = 'column'; slot.style.alignItems = 'center';
+    slot.append(this.root, this.nav);
+    o.threads.forEach(function (t) { self.cards.push(self.make(t)); });
+    this.render();
+
+    this.nav.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-act]'); if (!b) return;
+      self.go(self.cur + (b.dataset.act === 'next' ? 1 : -1));
+    });
+    this.root.addEventListener('click', function (e) {
+      var li = e.target.closest('.card'); if (!li) return;
+      var i = self.cards.indexOf(li);
+      if (e.target.closest('.card__dismiss')) { self.dismiss(i); return; }
+      if (i === self.cur) { self.log('Opening t3code://threads/<environment-id>/' + li.dataset.id); return; }
+      if (i > self.cur) self.go(i);
+    });
+    this.root.addEventListener('pointerenter', function () { self.root.removeAttribute('data-active'); });
+  }
+  Stack.prototype.make = function (t) {
+    var li = document.createElement('div');
+    li.className = 'card'; li.setAttribute('role', 'listitem');
+    li.dataset.status = t.status; li.dataset.id = t.id || ('t' + Math.random().toString(36).slice(2, 7));
+    li.innerHTML =
+      '<button class="card__main" type="button">' +
+        '<svg class="icon card__status" role="img" aria-label="' + (t.status === 'failed' ? 'Failed' : 'Completed') + '"><use href="#' + (t.status === 'failed' ? 'i-circle-x' : 'i-circle-check') + '"/></svg>' +
+        '<span class="card__title">' + esc(t.title) + '</span><span class="card__dot" aria-hidden="true">&bull;</span>' +
+        '<span class="card__snippet">' + esc(t.snippet) + '</span>' +
+        '<span class="card__end"><span class="card__time">' + esc(t.time || 'now') + '</span><span class="card__open">Open ' + svg('i-arrow-up-right') + '</span></span>' +
+      '</button>' +
+      '<button class="card__dismiss" type="button" aria-label="Dismiss ' + esc(t.title) + '">' + svg('i-x') + '</button>';
+    li._t = t;
+    this.root.append(li);
+    return li;
+  };
+  Stack.prototype.log = function (m) { if (this.logEl) this.logEl.textContent = m; };
+  Stack.prototype.render = function () {
+    var self = this, n = this.cards.length;
+    this.cards.forEach(function (c, i) {
+      var rel = i - self.cur;
+      c.dataset.d = rel < 0 ? 'passed' : rel > 3 ? 'far' : String(rel);
+      var front = rel === 0;
+      c.setAttribute('aria-hidden', front ? 'false' : 'true');
+      c.querySelector('.card__main').tabIndex = front ? 0 : -1;
+      c.querySelector('.card__dismiss').tabIndex = front ? 0 : -1;
+      c.classList.toggle('is-focus', self.forceFocus && front);
+    });
+    var count = this.nav.querySelector('.stack-nav__count');
+    var front = this.cards[this.cur];
+    count.textContent = n ? (this.cur + 1) + ' / ' + n : '0 / 0';
+    this.nav.hidden = n < 2;
+    this.nav.querySelector('[data-act="prev"]').disabled = this.cur <= 0;
+    this.nav.querySelector('[data-act="next"]').disabled = this.cur >= n - 1;
+    if (front) count.setAttribute('aria-label', 'Card ' + (this.cur + 1) + ' of ' + n + ': ' + front._t.title + ', ' + front.dataset.status);
+  };
+  Stack.prototype.go = function (i) {
+    var n = this.cards.length; if (!n) return;
+    i = Math.max(0, Math.min(n - 1, i));
+    if (i === this.cur) return;
+    this.cur = i; this.render();
+  };
+  Stack.prototype.add = function (t) {
+    var li = this.make(t);
+    li.dataset.d = 'enter';
+    this.cards.unshift(li); this.cur = 0;
+    void li.offsetWidth;            /* commit the entering state before animating to the real one */
+    this.render();
+    this.log('New completion: ' + t.title);
+  };
+  Stack.prototype.dismiss = function (i) {
+    var li = this.cards[i]; if (!li) return;
+    this.cards.splice(i, 1);
+    if (i < this.cur) this.cur -= 1;
+    if (this.cur > this.cards.length - 1) this.cur = Math.max(0, this.cards.length - 1);
+    li.dataset.d = 'leaving'; li.querySelector('.card__main').tabIndex = -1;
+    this.render();
+    setTimeout(function () { li.remove(); }, 300);
+    this.log(this.cards.length ? 'Dismissed. ' + this.cards.length + ' left.' : 'All caught up. The pill drops the badge and the stack closes.');
+  };
+  Stack.prototype.active = function () {
+    return this.root.matches(':hover') || this.nav.matches(':hover') || this.root.contains(document.activeElement) || this.nav.contains(document.activeElement);
+  };
+
+  var stacks = [];
+  var staticStack = new Stack(document.getElementById('static-stack'), { threads: THREADS, current: 1, forceFocus: true, active: true });
+  var log = document.getElementById('log');
+  var demo = new Stack(document.getElementById('demo-stack'), { threads: THREADS.slice(), current: 0, log: log });
+  stacks.push(staticStack, demo);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    stacks.forEach(function (s) {
+      if (!s.active() || e.target.closest('.seg, .tools')) return;
+      var cap = null;
+      if (e.key === KEYS.next) { s.go(s.cur + 1); cap = 'next'; }
+      else if (e.key === KEYS.prev) { s.go(s.cur - 1); cap = 'prev'; }
+      else if (e.key === KEYS.dismiss || e.key === 'Escape') { s.dismiss(s.cur); }
+      else return;
+      e.preventDefault();
+      if (cap) {
+        var k = s.nav.querySelector('[data-act="' + cap + '"]');
+        k.classList.add('is-pressed'); setTimeout(function () { k.classList.remove('is-pressed'); }, 120);
+      }
+    });
+  });
+
+  var extra = 0;
+  document.getElementById('add-done').addEventListener('click', function () {
+    var t = EXTRA[extra++ % EXTRA.length]; demo.add({ status: 'done', title: t.title, snippet: t.snippet, time: 'now' });
+  });
+  document.getElementById('add-failed').addEventListener('click', function () {
+    demo.add({ status: 'failed', title: 'Build the slide deck', snippet: 'Stopped: the export step ran out of memory. Try fewer images per slide.', time: 'now' });
+  });
+  document.getElementById('dismiss').addEventListener('click', function () { demo.dismiss(demo.cur); });
+})();
+</script>
+</body>
+</html>

@@ -4,3 +4,7 @@ out/
 *.log
 media/
 videos/
+
+# third-party pet art and screenshots that show it
+design/assets/
+design/*.png
