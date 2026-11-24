@@ -47,9 +47,15 @@
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <!-- Lucide icons (ISC licence). See icons.md. -->
-  <symbol id="i-square-pen" viewBox="0 0 24 24"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></symbol>
-  <symbol id="i-audio-lines" viewBox="0 0 24 24"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></symbol>
+  <symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
   <symbol id="i-bell" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-check-check" viewBox="0 0 24 24"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></symbol>
+  <symbol id="i-arrow-left-right" viewBox="0 0 24 24"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-log-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
   <symbol id="i-chevron-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol>
   <symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
   <symbol id="i-circle-x" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></symbol>
@@ -63,7 +69,7 @@
   <header class="top">
     <div>
       <h1>T3 Pet overlay</h1>
-      <p class="lede">Pet states, card anatomy and the stack. The wallpapers are stand-ins for a desktop; the glass follows the theme chosen here.</p>
+      <p class="lede">Pet states, card anatomy, the stack and the right-click menu. The wallpapers are stand-ins for a desktop; the glass follows the theme chosen here.</p>
     </div>
     <div class="tools">
       <div class="seg" role="group" aria-label="Theme" id="theme-seg">
@@ -87,29 +93,29 @@
       <div class="stage wall-lagoon"><div class="desk">
         <div class="pet-wrap"><div class="pet"></div></div>
         <div class="pill" role="toolbar" aria-label="Pet actions">
-          <button class="pill__btn" type="button" aria-label="New chat"><svg class="icon"><use href="#i-square-pen"/></svg></button>
-          <span class="pill__sep" aria-hidden="true"></span>
-          <button class="pill__btn" type="button" aria-label="Voice"><svg class="icon"><use href="#i-audio-lines"/></svg></button>
+          <button class="pill__btn" type="button" aria-label="Open T3 Code" title="Open T3 Code"><svg class="icon"><use href="#i-external-link"/></svg></button>
           <span class="pill__sep" aria-hidden="true"></span>
           <button class="pill__btn" type="button" aria-label="Show 4 completed threads" aria-expanded="false"><svg class="icon"><use href="#i-bell"/></svg><span class="pill__badge" aria-hidden="true">4</span></button>
+          <span class="pill__sep" aria-hidden="true"></span>
+          <button class="pill__btn" type="button" aria-label="Settings" title="Settings"><svg class="icon"><use href="#i-settings"/></svg></button>
         </div>
       </div></div>
-      <figcaption><b>Hovered.</b> A dark frosted pill: new chat, voice, and a bell. The green badge counts unread completions and disappears at zero.</figcaption>
+      <figcaption><b>Hovered.</b> A frosted pill that follows the theme: open T3 Code, a bell with the unread count, and a gear that opens the settings window. The badge disappears at zero.</figcaption>
     </figure>
 
     <figure>
       <div class="stage wall-night"><div class="desk">
         <div class="pet-wrap"><div class="pet"></div></div>
         <div class="pill" role="toolbar" aria-label="Pet actions">
-          <button class="pill__btn" type="button" aria-label="New chat"><svg class="icon"><use href="#i-square-pen"/></svg></button>
-          <span class="pill__sep" aria-hidden="true"></span>
-          <button class="pill__btn" type="button" aria-label="Voice"><svg class="icon"><use href="#i-audio-lines"/></svg></button>
+          <button class="pill__btn" type="button" aria-label="Open T3 Code" title="Open T3 Code"><svg class="icon"><use href="#i-external-link"/></svg></button>
           <span class="pill__sep" aria-hidden="true"></span>
           <button class="pill__btn" type="button" aria-label="Hide completed threads" aria-expanded="true"><svg class="icon"><use href="#i-chevron-up"/></svg></button>
+          <span class="pill__sep" aria-hidden="true"></span>
+          <button class="pill__btn" type="button" aria-label="Settings" title="Settings"><svg class="icon"><use href="#i-settings"/></svg></button>
         </div>
         <div class="stack-slot" id="static-stack"></div>
       </div></div>
-      <figcaption><b>Expanded.</b> Chevron replaces the bell. The front card is focused (ring, dismiss badge, "Open"); 2 / 4 shows where you are in the stack, and Up and Down move through it.</figcaption>
+      <figcaption><b>Expanded.</b> Chevron replaces the bell. The front card is focused (ring, dismiss badge, "Open"). While the pointer is over the stack the overlay has focus, and the 2 / 4 control is outlined to show the arrow keys are live.</figcaption>
     </figure>
   </div>
 
@@ -120,21 +126,19 @@
         <div class="card" data-status="done">
           <button class="card__main" type="button" tabindex="-1">
             <svg class="icon card__status" aria-label="Completed" role="img"><use href="#i-circle-check"/></svg>
-            <span class="card__title">Tell me a story</span><span class="card__dot" aria-hidden="true">&bull;</span>
-            <span class="card__snippet">Every night, Mina left a saucer of milk on the windowsill for the moon. Every night&hellip;</span>
+            <span class="card__body"><span class="card__line"><span class="card__title">Tell me a story</span><span class="card__dot" aria-hidden="true">&bull;</span><span class="card__snippet">Every night, Mina left a saucer of milk on the windowsill for the moon. Every night&hellip;</span></span><span class="card__meta"><b>Claude</b><i aria-hidden="true">&middot;</i><span>writing-notes</span></span></span>
             <span class="card__end"><span class="card__time">2m</span><span class="card__open">Open <svg class="icon"><use href="#i-arrow-up-right"/></svg></span></span>
           </button>
         </div>
       </div></div>
-      <figcaption><b>Completed.</b> Green tick, bold title, dot, one-line snippet that truncates with an ellipsis, relative time.</figcaption>
+      <figcaption><b>Completed.</b> Green tick, bold title, dot, one-line snippet that truncates with an ellipsis, relative time. A quiet line below names the provider and project.</figcaption>
     </figure>
     <figure>
       <div class="stage wall-lagoon short"><div class="desk">
         <div class="card" data-status="failed">
           <button class="card__main" type="button" tabindex="-1">
             <svg class="icon card__status" aria-label="Failed" role="img"><use href="#i-circle-x"/></svg>
-            <span class="card__title">Refactor date helpers</span><span class="card__dot" aria-hidden="true">&bull;</span>
-            <span class="card__snippet">Stopped: the type check failed in two files and I could not fix it without changing the API.</span>
+            <span class="card__body"><span class="card__line"><span class="card__title">Refactor date helpers</span><span class="card__dot" aria-hidden="true">&bull;</span><span class="card__snippet">Stopped: the type check failed in two files and I could not fix it without changing the API.</span></span><span class="card__meta"><b class="is-failed">Failed</b><i aria-hidden="true">&middot;</i><b>Codex</b><i aria-hidden="true">&middot;</i><span>date-utils</span></span></span>
             <span class="card__end"><span class="card__time">3h</span><span class="card__open">Open <svg class="icon"><use href="#i-arrow-up-right"/></svg></span></span>
           </button>
         </div>
@@ -146,8 +150,7 @@
         <div class="card is-hover" data-status="done">
           <button class="card__main" type="button" tabindex="-1">
             <svg class="icon card__status" aria-label="Completed" role="img"><use href="#i-circle-check"/></svg>
-            <span class="card__title">Fix login redirect</span><span class="card__dot" aria-hidden="true">&bull;</span>
-            <span class="card__snippet">Signed-in users now land on the page they asked for, and I added a test.</span>
+            <span class="card__body"><span class="card__line"><span class="card__title">Fix login redirect</span><span class="card__dot" aria-hidden="true">&bull;</span><span class="card__snippet">Signed-in users now land on the page they asked for, and I added a test.</span></span><span class="card__meta"><b>Codex</b><i aria-hidden="true">&middot;</i><span>web-app</span></span></span>
             <span class="card__end"><span class="card__time">14m</span><span class="card__open">Open <svg class="icon"><use href="#i-arrow-up-right"/></svg></span></span>
           </button>
           <button class="card__dismiss" type="button" tabindex="-1" aria-label="Dismiss Fix login redirect"><svg class="icon"><use href="#i-x"/></svg></button>
@@ -160,8 +163,7 @@
         <div class="card is-focus is-hover" data-status="done">
           <button class="card__main" type="button" tabindex="-1">
             <svg class="icon card__status" aria-label="Completed" role="img"><use href="#i-circle-check"/></svg>
-            <span class="card__title">Summarise meeting notes</span><span class="card__dot" aria-hidden="true">&bull;</span>
-            <span class="card__snippet">Three decisions, two open questions and one action for each person.</span>
+            <span class="card__body"><span class="card__line"><span class="card__title">Summarise meeting notes</span><span class="card__dot" aria-hidden="true">&bull;</span><span class="card__snippet">Three decisions, two open questions and one action for each person.</span></span><span class="card__meta"><b>Claude</b><i aria-hidden="true">&middot;</i><span>meeting-notes</span></span></span>
             <span class="card__end"><span class="card__time">1h</span><span class="card__open">Open <svg class="icon"><use href="#i-arrow-up-right"/></svg></span></span>
           </button>
           <button class="card__dismiss" type="button" tabindex="-1" aria-label="Dismiss Summarise meeting notes"><svg class="icon"><use href="#i-x"/></svg></button>
@@ -171,17 +173,55 @@
     </figure>
   </div>
 
+  <h2>Right-click menu</h2>
+  <div class="grid3">
+    <figure>
+      <div class="stage wall-dusk menu-stage" data-theme="light" style="height:440px"><div class="pet-wrap" style="position:absolute;left:36px;top:70px"><div class="pet"></div></div><div style="position:absolute;left:150px;top:60px">
+<ul class="menu" role="menu" aria-label="Pet menu">
+<li class="menu__item" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-external-link"/></svg><span>Open T3 Code</span></li>
+<li class="menu__item" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-check-check"/></svg><span>Mark all read</span><span class="menu__hint">4</span></li>
+<li class="menu__sep" role="separator"></li>
+<li class="menu__item is-focus" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-heart"/></svg><span>Pet it</span></li>
+<li class="menu__item" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-pause"/></svg><span>Pause pet</span></li>
+<li class="menu__sep" role="separator"></li>
+<li class="menu__item" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-arrow-left-right"/></svg><span>Switch pet</span><svg class="icon menu__sub"><use href="#i-chevron-right"/></svg></li>
+<li class="menu__sep" role="separator"></li>
+<li class="menu__item" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-settings"/></svg><span>Settings…</span></li>
+<li class="menu__item" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-log-out"/></svg><span>Quit</span></li>
+</ul>
+      </div></div>
+      <figcaption><b>Light.</b> Same glass, radii and tokens as the cards. Opens from the pet or the pill. The highlighted row shows keyboard focus (Up and Down move, Enter selects, Esc closes). "Pause pet" becomes "Resume" when active.</figcaption>
+    </figure>
+    <figure>
+      <div class="stage wall-night menu-stage" data-theme="dark" style="height:440px"><div class="pet-wrap" style="position:absolute;left:36px;top:70px"><div class="pet"></div></div><div style="position:absolute;left:150px;top:60px">
+<ul class="menu" role="menu" aria-label="Pet menu">
+<li class="menu__item" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-external-link"/></svg><span>Open T3 Code</span></li>
+<li class="menu__item" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-check-check"/></svg><span>Mark all read</span><span class="menu__hint">4</span></li>
+<li class="menu__sep" role="separator"></li>
+<li class="menu__item" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-heart"/></svg><span>Pet it</span></li>
+<li class="menu__item" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-pause"/></svg><span>Pause pet</span></li>
+<li class="menu__sep" role="separator"></li>
+<li class="menu__item is-focus" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-arrow-left-right"/></svg><span>Switch pet</span><svg class="icon menu__sub"><use href="#i-chevron-right"/></svg></li>
+<li class="menu__sep" role="separator"></li>
+<li class="menu__item" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-settings"/></svg><span>Settings…</span></li>
+<li class="menu__item" role="menuitem" tabindex="-1"><svg class="icon"><use href="#i-log-out"/></svg><span>Quit</span></li>
+</ul>
+      </div></div>
+      <figcaption><b>Dark.</b> "Switch pet" opens a submenu (arrow on the right). Groups: T3 actions, pet actions, pet management, app.</figcaption>
+    </figure>
+  </div>
+
   <h2>Stack and motion demo</h2>
   <div class="motion">
     <div>
       <div class="stage wall-lagoon" style="height:440px"><div class="desk">
         <div class="pet-wrap"><div class="pet"></div></div>
         <div class="pill" role="toolbar" aria-label="Pet actions">
-          <button class="pill__btn" type="button" aria-label="New chat"><svg class="icon"><use href="#i-square-pen"/></svg></button>
-          <span class="pill__sep" aria-hidden="true"></span>
-          <button class="pill__btn" type="button" aria-label="Voice"><svg class="icon"><use href="#i-audio-lines"/></svg></button>
+          <button class="pill__btn" type="button" aria-label="Open T3 Code" title="Open T3 Code"><svg class="icon"><use href="#i-external-link"/></svg></button>
           <span class="pill__sep" aria-hidden="true"></span>
           <button class="pill__btn" type="button" aria-label="Hide completed threads" aria-expanded="true"><svg class="icon"><use href="#i-chevron-up"/></svg></button>
+          <span class="pill__sep" aria-hidden="true"></span>
+          <button class="pill__btn" type="button" aria-label="Settings" title="Settings"><svg class="icon"><use href="#i-settings"/></svg></button>
         </div>
         <div class="stack-slot" id="demo-stack"></div>
       </div></div>
@@ -196,10 +236,10 @@
 
     <div>
       <dl class="notes">
-        <dt>Card enters</dt><dd>Drops in from 12px above at 96% scale, fades in over 160ms, settles in 240ms (<code>--ease-out</code>). The older cards shift back one step at the same time.</dd>
-        <dt>Stack shuffle</dt><dd>Down lifts the front card 14px and fades it out; the next card rises to the front. Up reverses it. Each step is one transform and one opacity transition, so it stays smooth.</dd>
-        <dt>Dismiss</dt><dd>The card fades and lifts 8px; cards behind move up. The count and badge update straight away.</dd>
-        <dt>Depth</dt><dd>Each level back moves 9px down, shrinks 4.5% and fades 30%. Back cards show only their glass edge, so text never ghosts through.</dd>
+        <dt>Card enters</dt><dd>Drops in from 10px above at 98% scale, fades in over 160ms, settles in 240ms (<code>--ease-out</code>). The older cards shift back one step at the same time.</dd>
+        <dt>Stack shuffle</dt><dd>Down lifts the front card 10px and fades it out; the next card rises to the front. Up reverses it. Each step is one transform and one opacity transition, so it stays smooth.</dd>
+        <dt>Dismiss</dt><dd>The card fades and lifts 6px; cards behind move up. The count and badge update straight away.</dd>
+        <dt>Depth</dt><dd>Each level back moves 7px down, shrinks 2% and fades 22%, with three layers behind the front card at most. Back cards show only their glass edge, so text never ghosts through.</dd>
         <dt>Hover controls</dt><dd>Dismiss badge scales in from 80%; time cross-fades to "Open" in 160ms.</dd>
         <dt>Reduced motion</dt><dd>Movement durations drop to 0ms and only 120ms fades remain, from the OS setting or the toggle here. Nothing moves, but changes are still visible.</dd>
       </dl>
@@ -235,15 +275,15 @@
   var KEYS = { prev: 'ArrowUp', next: 'ArrowDown', dismiss: 'Delete' };
 
   var THREADS = [
-    { id: 't1', status: 'done',   title: 'Tell me a story',         time: '2m',  snippet: 'Every night, Mina left a saucer of milk on the windowsill for the moon. Every night…' },
-    { id: 't2', status: 'done',   title: 'Fix login redirect',      time: '14m', snippet: 'Signed-in users now land on the page they asked for, and I added a test.' },
-    { id: 't3', status: 'done',   title: 'Summarise meeting notes', time: '1h',  snippet: 'Three decisions, two open questions and one action for each person.' },
-    { id: 't4', status: 'failed', title: 'Refactor date helpers',   time: '3h',  snippet: 'Stopped: the type check failed in two files and I could not fix it without changing the API.' }
+    { id: 't1', provider: 'Claude', project: 'writing-notes', status: 'done',   title: 'Tell me a story',         time: '2m',  snippet: 'Every night, Mina left a saucer of milk on the windowsill for the moon. Every night…' },
+    { id: 't2', provider: 'Codex', project: 'web-app', status: 'done',   title: 'Fix login redirect',      time: '14m', snippet: 'Signed-in users now land on the page they asked for, and I added a test.' },
+    { id: 't3', provider: 'Claude', project: 'meeting-notes', status: 'done',   title: 'Summarise meeting notes', time: '1h',  snippet: 'Three decisions, two open questions and one action for each person.' },
+    { id: 't4', provider: 'Codex', project: 'date-utils', status: 'failed', title: 'Refactor date helpers',   time: '3h',  snippet: 'Stopped: the type check failed in two files and I could not fix it without changing the API.' }
   ];
   var EXTRA = [
-    { status: 'done', title: 'Write a haiku', snippet: 'Quiet morning rain, the kettle hums to itself, steam curls toward the light.' },
-    { status: 'done', title: 'Plan a debate round', snippet: 'Three speakers a side, four-minute speeches, and a two-minute prep break in the middle.' },
-    { status: 'done', title: 'Tidy the README', snippet: 'Moved setup steps to the top and removed two sections that no longer applied.' }
+    { provider: 'Claude', project: 'writing-notes', status: 'done', title: 'Write a haiku', snippet: 'Quiet morning rain, the kettle hums to itself, steam curls toward the light.' },
+    { provider: 'Claude', project: 'lesson-plans', status: 'done', title: 'Plan a debate round', snippet: 'Three speakers a side, four-minute speeches, and a two-minute prep break in the middle.' },
+    { provider: 'Codex', project: 'web-app', status: 'done', title: 'Tidy the README', snippet: 'Moved setup steps to the top and removed two sections that no longer applied.' }
   ];
 
   function svg(id) { return '<svg class="icon"><use href="#' + id + '"/></svg>'; }
@@ -259,8 +299,9 @@
     this.nav.className = 'stack-nav'; this.nav.setAttribute('role', 'group'); this.nav.setAttribute('aria-label', 'Browse completed threads');
     this.nav.innerHTML =
       '<button class="keycap" type="button" data-act="prev" aria-label="Previous card, Up arrow">' + svg('i-arrow-up') + '</button>' +
-      '<span class="stack-nav__count" aria-live="polite"></span>' +
+      '<span class="stack-nav__live" aria-hidden="true" title="Arrow keys are active"></span><span class="stack-nav__count" aria-live="polite"></span>' +
       '<button class="keycap" type="button" data-act="next" aria-label="Next card, Down arrow">' + svg('i-arrow-down') + '</button>';
+    this.slot = slot; this.pinKeys = !!o.pinKeys; if (o.pinKeys) slot.dataset.keys = 'on';
     slot.style.display = 'flex'; slot.style.flexDirection = 'column'; slot.style.alignItems = 'center';
     slot.append(this.root, this.nav);
     o.threads.forEach(function (t) { self.cards.push(self.make(t)); });
@@ -274,23 +315,44 @@
       var li = e.target.closest('.card'); if (!li) return;
       var i = self.cards.indexOf(li);
       if (e.target.closest('.card__dismiss')) { self.dismiss(i); return; }
-      if (i === self.cur) { self.log('Opening t3code://threads/<environment-id>/' + li.dataset.id); return; }
+      if (i === self.cur) { self.open(); return; }
       if (i > self.cur) self.go(i);
     });
     this.root.addEventListener('pointerenter', function () { self.root.removeAttribute('data-active'); });
+    /* Focus on hover: keys are live while the pointer or focus is inside the stack */
+    [this.root, this.nav].forEach(function (el) {
+      el.addEventListener('pointerenter', function () { self.slot.dataset.keys = 'on'; });
+      el.addEventListener('pointerleave', function () { if (!self.pinKeys && !self.active()) self.slot.dataset.keys = 'off'; });
+      el.addEventListener('focusin', function () { self.slot.dataset.keys = 'on'; });
+      el.addEventListener('focusout', function () { setTimeout(function () { if (!self.pinKeys && !self.active()) self.slot.dataset.keys = 'off'; }, 0); });
+    });
+  }
+  /* Cards are built with createElement, textContent and setAttribute, so thread text is never parsed as HTML */
+  function mk(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function icon(id, cls) {
+    var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('class', 'icon' + (cls ? ' ' + cls : ''));
+    var u = document.createElementNS('http://www.w3.org/2000/svg', 'use'); u.setAttribute('href', '#' + id); s.appendChild(u); return s;
   }
   Stack.prototype.make = function (t) {
-    var li = document.createElement('div');
-    li.className = 'card'; li.setAttribute('role', 'listitem');
+    var li = mk('div', 'card'); li.setAttribute('role', 'listitem');
     li.dataset.status = t.status; li.dataset.id = t.id || ('t' + Math.random().toString(36).slice(2, 7));
-    li.innerHTML =
-      '<button class="card__main" type="button">' +
-        '<svg class="icon card__status" role="img" aria-label="' + (t.status === 'failed' ? 'Failed' : 'Completed') + '"><use href="#' + (t.status === 'failed' ? 'i-circle-x' : 'i-circle-check') + '"/></svg>' +
-        '<span class="card__title">' + esc(t.title) + '</span><span class="card__dot" aria-hidden="true">&bull;</span>' +
-        '<span class="card__snippet">' + esc(t.snippet) + '</span>' +
-        '<span class="card__end"><span class="card__time">' + esc(t.time || 'now') + '</span><span class="card__open">Open ' + svg('i-arrow-up-right') + '</span></span>' +
-      '</button>' +
-      '<button class="card__dismiss" type="button" aria-label="Dismiss ' + esc(t.title) + '">' + svg('i-x') + '</button>';
+    var main = mk('button', 'card__main'); main.type = 'button';
+    var st = icon(t.status === 'failed' ? 'i-circle-x' : 'i-circle-check', 'card__status');
+    st.setAttribute('role', 'img'); st.setAttribute('aria-label', t.status === 'failed' ? 'Failed' : 'Completed');
+    var body = mk('span', 'card__body'), line = mk('span', 'card__line');
+    var dot = mk('span', 'card__dot', '\u2022'); dot.setAttribute('aria-hidden', 'true');
+    line.append(mk('span', 'card__title', t.title), dot, mk('span', 'card__snippet', t.snippet));
+    var meta = mk('span', 'card__meta');
+    function sep() { var i = mk('i', null, '\u00b7'); i.setAttribute('aria-hidden', 'true'); return i; }
+    if (t.status === 'failed') meta.append(mk('b', 'is-failed', 'Failed'), sep());
+    meta.append(mk('b', null, t.provider), sep(), mk('span', null, t.project));
+    body.append(line, meta);
+    var end = mk('span', 'card__end'), open = mk('span', 'card__open', 'Open ');
+    open.append(icon('i-arrow-up-right'));
+    end.append(mk('span', 'card__time', t.time || 'now'), open);
+    main.append(st, body, end);
+    var dis = mk('button', 'card__dismiss'); dis.type = 'button'; dis.setAttribute('aria-label', 'Dismiss ' + t.title); dis.append(icon('i-x'));
+    li.append(main, dis);
     li._t = t;
     this.root.append(li);
     return li;
@@ -298,6 +360,7 @@
   Stack.prototype.log = function (m) { if (this.logEl) this.logEl.textContent = m; };
   Stack.prototype.render = function () {
     var self = this, n = this.cards.length;
+    var hadFocus = this.root.contains(document.activeElement);   /* focus inside the stack must follow the front card */
     this.cards.forEach(function (c, i) {
       var rel = i - self.cur;
       c.dataset.d = rel < 0 ? 'passed' : rel > 3 ? 'far' : String(rel);
@@ -314,6 +377,10 @@
     this.nav.querySelector('[data-act="prev"]').disabled = this.cur <= 0;
     this.nav.querySelector('[data-act="next"]').disabled = this.cur >= n - 1;
     if (front) count.setAttribute('aria-label', 'Card ' + (this.cur + 1) + ' of ' + n + ': ' + front._t.title + ', ' + front.dataset.status);
+    if (hadFocus && front) front.querySelector('.card__main').focus({ preventScroll: true });
+  };
+  Stack.prototype.open = function () {
+    var li = this.cards[this.cur]; if (li) this.log('Opening t3code://threads/<environment-id>/' + li.dataset.id);
   };
   Stack.prototype.go = function (i) {
     var n = this.cards.length; if (!n) return;
@@ -344,7 +411,7 @@
   };
 
   var stacks = [];
-  var staticStack = new Stack(document.getElementById('static-stack'), { threads: THREADS, current: 1, forceFocus: true, active: true });
+  var staticStack = new Stack(document.getElementById('static-stack'), { threads: THREADS, current: 1, forceFocus: true, active: true, pinKeys: true });
   var log = document.getElementById('log');
   var demo = new Stack(document.getElementById('demo-stack'), { threads: THREADS.slice(), current: 0, log: log });
   stacks.push(staticStack, demo);
@@ -357,6 +424,8 @@
       if (e.key === KEYS.next) { s.go(s.cur + 1); cap = 'next'; }
       else if (e.key === KEYS.prev) { s.go(s.cur - 1); cap = 'prev'; }
       else if (e.key === KEYS.dismiss || e.key === 'Escape') { s.dismiss(s.cur); }
+      else if (e.key === 'Enter' && !s.root.contains(document.activeElement) && !s.nav.contains(document.activeElement)) { s.open(); }
+      else if (e.key === 'Enter' && !s.root.contains(document.activeElement) && !s.nav.contains(document.activeElement)) { s.open(); }
       else return;
       e.preventDefault();
       if (cap) {
@@ -366,12 +435,25 @@
     });
   });
 
+  document.querySelectorAll('.menu').forEach(function (m) {
+    var items = Array.prototype.slice.call(m.querySelectorAll('[role="menuitem"]'));
+    items.forEach(function (it) { it.addEventListener('click', function () { log.textContent = 'Menu: ' + it.textContent.trim(); }); });
+    m.addEventListener('keydown', function (e) {
+      var i = items.indexOf(document.activeElement); if (i < 0) return;
+      if (e.key === 'ArrowDown') i = (i + 1) % items.length;
+      else if (e.key === 'ArrowUp') i = (i - 1 + items.length) % items.length;
+      else if (e.key === 'Enter') { items[i].click(); return; }
+      else return;
+      e.preventDefault(); items.forEach(function (x) { x.classList.remove('is-focus'); }); items[i].focus();
+    });
+  });
+
   var extra = 0;
   document.getElementById('add-done').addEventListener('click', function () {
-    var t = EXTRA[extra++ % EXTRA.length]; demo.add({ status: 'done', title: t.title, snippet: t.snippet, time: 'now' });
+    var t = EXTRA[extra++ % EXTRA.length]; demo.add({ provider: t.provider, project: t.project, status: 'done', title: t.title, snippet: t.snippet, time: 'now' });
   });
   document.getElementById('add-failed').addEventListener('click', function () {
-    demo.add({ status: 'failed', title: 'Build the slide deck', snippet: 'Stopped: the export step ran out of memory. Try fewer images per slide.', time: 'now' });
+    demo.add({ provider: 'Codex', project: 'slide-deck', status: 'failed', title: 'Build the slide deck', snippet: 'Stopped: the export step ran out of memory. Try fewer images per slide.', time: 'now' });
   });
   document.getElementById('dismiss').addEventListener('click', function () { demo.dismiss(demo.cur); });
 })();

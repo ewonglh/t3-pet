@@ -4,7 +4,7 @@
 
 .icon {
   width: 18px; height: 18px; flex: none;
-  fill: none; stroke: currentColor; stroke-width: 2;
+  fill: none; stroke: currentColor; stroke-width: 1.75;
   stroke-linecap: round; stroke-linejoin: round;
 }
 
@@ -52,7 +52,7 @@
   border-radius: 46% 46% 40% 40%; width: 70%; height: 74%; margin: 20% auto 0;
 }
 
-/* ---------- Pill (dark in both themes) ---------- */
+/* ---------- Pill (follows the theme) ---------- */
 .pill {
   position: relative; z-index: 2; margin-top: var(--space-1);
   display: inline-flex; align-items: center; gap: 2px; padding: 4px;
@@ -71,14 +71,15 @@
 .pill__btn:hover { background: var(--pill-hover); }
 .pill__sep { width: 1px; height: 16px; background: var(--pill-divider); margin: 0 2px; }
 .pill__badge {
-  position: absolute; top: -4px; right: -5px; min-width: 16px; height: 16px; padding: 0 4px;
-  display: grid; place-items: center; border-radius: var(--radius-pill);
+  position: absolute; top: -5px; right: -6px; min-width: 16px; height: 16px; padding: 0 4px;
+  display: grid; place-items: center; border-radius: var(--badge-radius);
   background: var(--badge-bg); color: var(--badge-fg);
-  font: var(--weight-semibold) var(--text-xs)/1 var(--font-sans);
-  box-shadow: 0 0 0 2px #0a0a0a;
+  font: var(--weight-semibold) 10.5px/1 var(--font-sans); letter-spacing: 0.01em;
+  box-shadow: 0 0 0 2px var(--popover);
 }
 .pill .icon { width: 17px; height: 17px; }
-.pill__btn[aria-expanded="true"] { color: #fff; }
+.pill__btn[aria-expanded="true"] { background: var(--chip-active); }
+.pill__btn:focus-visible, .stack-nav :focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
 /* ---------- Cards ---------- */
 .card {
@@ -95,31 +96,37 @@
 .card__main {
   all: unset; box-sizing: border-box; cursor: pointer;
   position: absolute; inset: 0; display: flex; align-items: center; gap: var(--space-2);
-  padding: 0 var(--space-4) 0 var(--space-3); border-radius: inherit; min-width: 0;
+  padding: 0 var(--space-4) 0 14px; border-radius: inherit; min-width: 0;
 }
+.card__body { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.card__line { display: flex; align-items: baseline; gap: 7px; min-width: 0; }
+.card__meta { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 11px; line-height: 1.2; color: var(--muted-foreground); white-space: nowrap; overflow: hidden; }
+.card__meta b { font-weight: var(--weight-medium); color: var(--muted-foreground); }
+.card__meta i { font-style: normal; opacity: 0.6; }
+.card__meta span { overflow: hidden; text-overflow: ellipsis; }
 .card__main:focus-visible, .card.is-focus .card__main { box-shadow: var(--focus-ring); }
 .card__status { width: 18px; height: 18px; }
 .card[data-status="done"] .card__status { color: var(--success-foreground); }
 .card[data-status="failed"] .card__status { color: var(--error-foreground); }
-.card__title { font-weight: var(--weight-semibold); white-space: nowrap; flex: 0 1 auto; max-width: 40%; overflow: hidden; text-overflow: ellipsis; }
+.card__title { font-weight: var(--weight-semibold); white-space: nowrap; flex: 0 1 auto; max-width: 58%; overflow: hidden; text-overflow: ellipsis; }
 .card__dot { color: var(--muted-foreground); flex: none; }
-.card__snippet { flex: 1 1 0; min-width: 0; color: var(--muted-foreground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card__snippet { font-size: 12.5px; flex: 1 1 0; min-width: 0; color: var(--muted-foreground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card__end { position: relative; flex: none; display: grid; justify-items: end; min-width: 44px; }
 .card__time, .card__open { grid-area: 1 / 1; white-space: nowrap; transition: opacity var(--dur-fade) linear; }
-.card__time { color: var(--muted-foreground); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+.card__time { color: var(--muted-foreground); font-size: 11px; font-variant-numeric: tabular-nums; }
 .card__open { display: inline-flex; align-items: center; gap: 2px; font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--card-foreground); opacity: 0; }
 .card__open .icon { width: 14px; height: 14px; }
 
 .card__dismiss {
   position: absolute; top: -7px; left: -7px; z-index: 3; width: 20px; height: 20px; padding: 0;
   display: grid; place-items: center; border-radius: var(--radius-pill);
-  border: 1px solid var(--pill-border); background: #0a0a0a; color: #f5f5f5; cursor: pointer;
+  border: 1px solid var(--card-border); background: var(--popover); color: var(--foreground); cursor: pointer;
   opacity: 0; transform: scale(0.8); pointer-events: none;
   transition: opacity var(--dur-fade) linear, transform var(--dur-move) var(--ease-out);
-  box-shadow: 0 2px 6px rgb(0 0 0 / 35%);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 25%);
 }
 .card__dismiss .icon { width: 12px; height: 12px; stroke-width: 2.5; }
-.card__dismiss:focus-visible { box-shadow: 0 0 0 2px #0a0a0a, 0 0 0 4px #fff; opacity: 1; transform: none; pointer-events: auto; }
+.card__dismiss:focus-visible { box-shadow: var(--focus-ring); opacity: 1; transform: none; pointer-events: auto; }
 
 /* Hover / focus / keyboard-active: show dismiss and swap time for "Open" */
 .card:hover, .card.is-hover, .card:focus-within { background: var(--card-hover-surface); }
@@ -152,12 +159,12 @@
 /* Already seen: lifts away upward and fades */
 .stack .card[data-d="passed"] {
   --d: 0; opacity: 0; pointer-events: none; z-index: 20;
-  transform: translateY(-14px) scale(1.02);
+  transform: translateY(calc(var(--stack-travel) * -1)) scale(1.01);
 }
 /* Entering (new completion) starts here, then settles into data-d="0" */
-.stack .card[data-d="enter"] { --d: 0; opacity: 0; transform: translateY(-12px) scale(0.96); }
+.stack .card[data-d="enter"] { --d: 0; opacity: 0; transform: translateY(calc(var(--stack-travel) * -1)) scale(0.98); }
 /* Dismissed */
-.stack .card[data-d="leaving"] { --d: 0; opacity: 0; transform: translateY(-8px) scale(0.96); pointer-events: none; z-index: 20; }
+.stack .card[data-d="leaving"] { --d: 0; opacity: 0; transform: translateY(-6px) scale(0.98); pointer-events: none; z-index: 20; }
 
 /* Position indicator with arrow-key hints */
 .stack-nav {
@@ -171,14 +178,43 @@
 .stack-nav__count { min-width: 38px; text-align: center; }
 .keycap {
   display: grid; place-items: center; width: 24px; height: 22px; padding: 0; cursor: pointer;
-  border-radius: 6px; border: 1px solid var(--pill-divider); background: rgb(255 255 255 / 6%); color: inherit;
-  box-shadow: 0 1px 0 rgb(255 255 255 / 10%);
+  border-radius: 6px; border: 1px solid var(--pill-divider); background: var(--control-surface); color: inherit;
+  box-shadow: 0 1px 0 var(--pill-divider);
   transition: background var(--dur-fast) linear, transform var(--dur-fast) linear;
 }
 .keycap:hover { background: var(--pill-hover); }
 .keycap:active, .keycap.is-pressed { background: var(--pill-hover); transform: translateY(1px); }
 .keycap:disabled { opacity: 0.35; cursor: default; }
 .keycap .icon { width: 14px; height: 14px; }
-.pill :focus-visible, .stack-nav :focus-visible { outline: none; box-shadow: 0 0 0 2px #0a0a0a, 0 0 0 4px #fff; }
 .stack-nav { visibility: visible; }
 .stack-nav[hidden] { display: none; }
+
+.card__meta .is-failed { color: var(--error-foreground); font-weight: var(--weight-semibold); }
+
+/* ---------- Keys-active cue: the overlay has focus while the pointer is over the stack ---------- */
+.stack-nav { transition: border-color var(--dur-fade) linear, box-shadow var(--dur-fade) linear; }
+.stack-nav__live { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); margin-left: 4px; opacity: 0; transition: opacity var(--dur-fade) linear; }
+[data-keys="on"] .stack-nav { border-color: var(--primary); box-shadow: 0 0 0 3px var(--chip-active); }
+[data-keys="on"] .stack-nav__live { opacity: 1; }
+[data-keys="on"] .stack-nav .keycap { border-color: color-mix(in srgb, var(--primary) 55%, var(--pill-divider)); }
+
+/* ---------- Context menu ---------- */
+.menu {
+  width: 224px; padding: 4px; margin: 0; list-style: none; border-radius: var(--radius-card);
+  background: var(--card-surface); color: var(--card-foreground);
+  border: 1px solid var(--card-border); box-shadow: var(--card-highlight), var(--card-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  font: var(--weight-regular) var(--text-base)/1.2 var(--font-sans);
+}
+.menu__item {
+  display: flex; align-items: center; gap: var(--space-2); height: 30px; padding: 0 var(--space-2);
+  border-radius: var(--radius-md); cursor: default; user-select: none;
+}
+.menu__item .icon { width: 16px; height: 16px; color: var(--muted-foreground); }
+.menu__item .menu__sub { margin-left: auto; width: 14px; height: 14px; }
+.menu__hint { margin-left: auto; font-size: 11px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.menu__item:hover, .menu__item.is-hover { background: var(--control-surface-hover); }
+.menu__item:focus-visible, .menu__item.is-focus { outline: none; background: var(--control-surface-hover); box-shadow: inset 0 0 0 2px var(--ring); }
+.menu__item:hover .icon, .menu__item.is-focus .icon, .menu__item:focus-visible .icon { color: var(--foreground); }
+.menu__sep { height: 1px; margin: 4px 6px; background: var(--border); list-style: none; }

@@ -1,15 +1,21 @@
 /*
- * T3 Pet design tokens.
+ * T3 Pet design tokens. Light and dark only.
  *
- * Source: pingdotgg/t3code, apps/web/src/index.css (default branch, read 24/11/2026).
- * Values marked [T3] are copied from there (Tailwind palette values resolved to hex
- * or oklch). Values marked [approx] are this design's own additions or adjustments.
- * Light is the default. Dark applies when data-theme="dark", or when the OS is dark
- * and data-theme is not "light" (so an Electron renderer can set data-theme from T3's
- * active theme, or leave it unset to follow the OS).
+ * Colour sources (read-only, pingdotgg/t3code, 24/11/2026):
+ *  [palette] packages/shared/src/themePalettes.ts: T3_CODE_LIGHT_THEME_COLORS and T3_CODE_DARK_THEME_COLORS.
+ *            Role mapping: canvas -> --background, text -> --foreground, surface -> --card,
+ *            surfaceOverlay -> --popover, accent -> --primary and --ring, border, input, muted,
+ *            mutedForeground, accentSurface -> --accent, error, errorForeground.
+ *  [index.css] apps/web/src/index.css: glass blur, opacity and saturation, radius scale, font stack,
+ *            and success green (the palettes have no success role).
+ *  [approx]  this design's own values: card and chip surfaces, shadows, stack and motion numbers,
+ *            and two legibility adjustments noted inline.
+ *
+ * Theme: data-theme="light" or "dark" on any element re-themes that subtree; with no attribute the
+ * root follows the OS. An Electron renderer sets data-theme from the app's Light / Dark / Match system choice.
  */
 
-:root {
+:root, [data-theme="light"] {
   color-scheme: light;
 
   /* Type [T3: --font-sans / --font-mono] */
@@ -29,7 +35,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-card: 14px; /* [approx] pet cards sit between T3 xl (12px) and the reference's rounder cards */
+  --radius-card: var(--radius-xl); /* 12px, same as T3 xl */
   --radius-pill: 999px;
 
   /* Glass [T3: --glass-blur 12px, --glass-opacity 80%, --glass-saturation 1.14] */
@@ -39,27 +45,28 @@
   --glass-opacity-card: 88%; /* [approx] a little denser than T3 so text stays legible over busy wallpapers */
 
   /* Colour: neutrals [T3: light theme] */
-  --background: oklch(99.2% 0 0);          /* zinc-25 */
-  --foreground: #18181b;                    /* zinc-900 */
+  --background: #fcfcfc;                    /* [palette] canvas */
+  --foreground: #27272a;                    /* [palette] text */
   --card: #ffffff;
-  --card-foreground: #18181b;
+  --card-foreground: #27272a;
   --popover: #ffffff;
-  --popover-foreground: #18181b;
-  --muted: #fafafa;                         /* zinc-50 */
-  --muted-foreground: #52525b;              /* [approx] zinc-600; T3 uses zinc-500 (#71717a), too faint on glass */
-  --accent: #f4f4f5;                        /* zinc-100 */
+  --popover-foreground: #27272a;
+  --muted: #fafafa;                         /* [palette] muted */
+  --muted-foreground: #52525b;              /* [approx] zinc-600; palette mutedForeground is #71717b, too faint on glass */
+  --accent: #f4f4f5;                        /* [palette] accentSurface */
   --accent-foreground: #18181b;
   --border: #e4e4e7;                        /* zinc-200 */
   --input: #d4d4d8;                         /* zinc-300 */
-  --primary: oklch(0.488 0.217 264);
+  --border-strong: #8b8b93;                 /* [approx] about 3:1 on white and the light sidebar: control edges, switch track */
+  --primary: #1b4ed8;                       /* [palette] accent */
   --primary-foreground: #ffffff;
   --ring: var(--primary);
 
   /* Status [T3] */
   --success: #10b981;                       /* emerald-500 */
   --success-foreground: #047857;            /* emerald-700 */
-  --error: #ef4444;                         /* red-500 */
-  --error-foreground: #b91c1c;              /* red-700 */
+  --error: #fb2c36;                         /* [palette] error */
+  --error-foreground: #c10007;              /* [palette] errorForeground */
 
   /* Pet surfaces [approx: derived from the tokens above] */
   --card-surface: color-mix(in srgb, var(--popover) var(--glass-opacity-card), transparent);
@@ -68,23 +75,34 @@
   --card-shadow: 0 10px 28px -12px rgb(24 24 27 / 38%), 0 2px 6px -2px rgb(24 24 27 / 18%);
   --card-hover-surface: color-mix(in srgb, var(--popover) 96%, transparent);
 
-  /* The pill is dark in both themes (matches the reference): it floats over any wallpaper. */
-  --pill-surface: color-mix(in srgb, #0a0a0a 80%, transparent);
-  --pill-border: rgb(255 255 255 / 10%);
-  --pill-foreground: #f5f5f5;               /* neutral-100 */
-  --pill-muted: #a3a3a3;                    /* neutral-400 */
-  --pill-hover: rgb(255 255 255 / 12%);
-  --pill-divider: rgb(255 255 255 / 14%);
-  --pill-shadow: 0 12px 28px -12px rgb(0 0 0 / 60%);
+  /* Settings sidebar [palette] sidebar* roles */
+  --sidebar: #fafafa;
+  --sidebar-foreground: #27272a;
+  --sidebar-muted-foreground: #71717b;
+  --sidebar-icon-color: #71717b;
+  --sidebar-row-hover: #fcfcfc;
+  --sidebar-row-active: #ffffff;
+  --sidebar-row-selected: #ffffff;
+  --sidebar-border: #e4e4e7;
 
-  /* Badge: dark text on emerald-400 gives ~9:1; white on emerald-500 would be ~2.5:1 */
+  /* Chip (the pill): follows the theme, built from the card tokens */
+  --pill-surface: color-mix(in srgb, var(--popover) var(--glass-opacity-card), transparent);
+  --pill-border: var(--card-border);
+  --pill-foreground: var(--foreground);
+  --pill-muted: var(--muted-foreground);
+  --pill-hover: var(--control-surface-hover);
+  --pill-divider: var(--border);
+  --pill-shadow: 0 10px 24px -12px rgb(24 24 27 / 40%);
+
+  /* Badge: rounded square, dark text on emerald-400 (~8:1; white on emerald-500 would be ~2.5:1) */
   --badge-bg: #34d399;                      /* emerald-400 */
   --badge-fg: #022c22;                      /* emerald-950 */
+  --badge-radius: 5px;
 
   /* Controls */
   --control-surface: color-mix(in srgb, var(--foreground) 5%, transparent);
   --control-surface-hover: color-mix(in srgb, var(--foreground) 9%, transparent);
-  --switch-off: #d4d4d8;
+  --switch-off: var(--border-strong);
   --focus-ring: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
 
   /* Spacing (4px base) */
@@ -101,15 +119,16 @@
   --pet-scale: 0.5;
   --pet-w: calc(var(--pet-frame-w) * var(--pet-scale) * 1px);
   --pet-h: calc(var(--pet-frame-h) * var(--pet-scale) * 1px);
-  --pill-height: 40px;
-  --pill-button: 32px;
-  --card-width: 384px;
-  --card-height: 52px;
+  --pill-height: 38px;
+  --pill-button: 30px;
+    --card-width: 384px;
+  --card-height: 64px;
 
   /* Stack depth */
-  --stack-step-y: 9px;
-  --stack-step-scale: 0.045;
-  --stack-step-fade: 0.3;
+  --stack-step-y: 7px;      /* peek per layer (about 6px visible once the scale step is applied) */
+  --stack-step-scale: 0.02;
+  --stack-step-fade: 0.22;
+  --stack-travel: 10px;     /* shuffle travel when a card leaves or enters */
 
   /* Motion. Durations split by kind so reduced motion can zero the movement but keep fades. */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -119,66 +138,103 @@
   --dur-fade: 160ms;
 }
 
-/* Dark [T3: dark theme] */
-:root[data-theme="dark"] {
+/* Dark */
+[data-theme="dark"] {
   color-scheme: dark;
-  --glass-blur: 16px;                       /* [T3] dark override */
-  --glass-saturation: 1.08;                 /* [T3] dark override */
-  --background: #000000;
-  --foreground: #f5f5f5;                    /* neutral-100 */
-  --card: color-mix(in srgb, #0a0a0a 97%, #ffffff);
+  --glass-blur: 16px;                       /* [index.css] dark override */
+  --glass-saturation: 1.08;                 /* [index.css] dark override */
+  --background: #0a0a0a;                    /* [palette] canvas */
+  --foreground: #f5f5f5;                    /* [palette] text */
+  --card: #111111;                          /* [palette] surface */
   --card-foreground: #f5f5f5;
-  --popover: color-mix(in srgb, #0a0a0a 97%, #ffffff);
+  --popover: #111111;                       /* [palette] surfaceOverlay */
   --popover-foreground: #f5f5f5;
-  --muted: rgb(255 255 255 / 3%);
-  --muted-foreground: #a3a3a3;              /* neutral-400 */
-  --accent: rgb(255 255 255 / 4%);
+  --muted: #111111;                         /* [palette] muted */
+  --muted-foreground: #a3a3a3;              /* [approx] palette mutedForeground is #818181; brighter for legibility on glass */
+  --accent: #141414;                        /* [palette] accentSurface */
   --accent-foreground: #f5f5f5;
-  --border: rgb(255 255 255 / 8%);
-  --input: rgb(255 255 255 / 11%);
-  --primary: oklch(0.571 0.21 264);
+  --border: #191919;                        /* [palette] border */
+  --input: #1e1e1e;                         /* [palette] input */
+  --primary: #346bf1;                       /* [palette] accent */
   --success-foreground: #34d399;            /* emerald-400 */
-  --error: color-mix(in srgb, #ef4444 90%, #ffffff);
-  --error-foreground: #f87171;              /* red-400 */
+  --error: #fb414a;                         /* [palette] error */
+  --error-foreground: #ff6467;              /* [palette] errorForeground */
 
-  --card-border: rgb(255 255 255 / 10%);
+    --sidebar: #000000;                       /* [palette] sidebar* roles (dark) */
+  --sidebar-foreground: #f1f3f7;
+  --sidebar-muted-foreground: #a3a3a3;
+  --sidebar-icon-color: #a3a3a3;
+  --sidebar-row-hover: #131313;
+  --sidebar-row-active: #1a1b1b;
+  --sidebar-row-selected: #111111;
+  --sidebar-border: #141414;
+  --border-strong: #6f6f6f;                 /* [approx] about 3.5:1 on #111: control edges, switch track */
+  --card-border: rgb(255 255 255 / 10%);    /* [approx] visible edge on glass; palette border (#191919) is too faint over wallpapers */
   --card-highlight: inset 0 1px 0 rgb(255 255 255 / 7%);
   --card-shadow: 0 14px 32px -16px rgb(0 0 0 / 80%), 0 2px 6px -2px rgb(0 0 0 / 50%);
-  --card-hover-surface: color-mix(in srgb, #141414 94%, transparent);
+  --card-hover-surface: color-mix(in srgb, #181818 94%, transparent);
+  --pill-shadow: 0 12px 28px -12px rgb(0 0 0 / 70%);
   --control-surface: rgb(255 255 255 / 6%);
   --control-surface-hover: rgb(255 255 255 / 11%);
-  --switch-off: rgb(255 255 255 / 18%);
+  --switch-off: var(--border-strong);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not([data-theme]) {
     color-scheme: dark;
-    --glass-blur: 16px;
-    --glass-saturation: 1.08;
-    --background: #000000;
-    --foreground: #f5f5f5;
-    --card: color-mix(in srgb, #0a0a0a 97%, #ffffff);
+    --glass-blur: 16px;                       /* [index.css] dark override */
+    --glass-saturation: 1.08;                 /* [index.css] dark override */
+    --background: #0a0a0a;                    /* [palette] canvas */
+    --foreground: #f5f5f5;                    /* [palette] text */
+    --card: #111111;                          /* [palette] surface */
     --card-foreground: #f5f5f5;
-    --popover: color-mix(in srgb, #0a0a0a 97%, #ffffff);
+    --popover: #111111;                       /* [palette] surfaceOverlay */
     --popover-foreground: #f5f5f5;
-    --muted: rgb(255 255 255 / 3%);
-    --muted-foreground: #a3a3a3;
-    --accent: rgb(255 255 255 / 4%);
+    --muted: #111111;                         /* [palette] muted */
+    --muted-foreground: #a3a3a3;              /* [approx] palette mutedForeground is #818181; brighter for legibility on glass */
+    --accent: #141414;                        /* [palette] accentSurface */
     --accent-foreground: #f5f5f5;
-    --border: rgb(255 255 255 / 8%);
-    --input: rgb(255 255 255 / 11%);
-    --primary: oklch(0.571 0.21 264);
-    --success-foreground: #34d399;
-    --error: color-mix(in srgb, #ef4444 90%, #ffffff);
-    --error-foreground: #f87171;
-    --card-border: rgb(255 255 255 / 10%);
+    --border: #191919;                        /* [palette] border */
+    --input: #1e1e1e;                         /* [palette] input */
+    --primary: #346bf1;                       /* [palette] accent */
+    --success-foreground: #34d399;            /* emerald-400 */
+    --error: #fb414a;                         /* [palette] error */
+    --error-foreground: #ff6467;              /* [palette] errorForeground */
+
+        --sidebar: #000000;                       /* [palette] sidebar* roles (dark) */
+    --sidebar-foreground: #f1f3f7;
+    --sidebar-muted-foreground: #a3a3a3;
+    --sidebar-icon-color: #a3a3a3;
+    --sidebar-row-hover: #131313;
+    --sidebar-row-active: #1a1b1b;
+    --sidebar-row-selected: #111111;
+    --sidebar-border: #141414;
+    --border-strong: #6f6f6f;
+    --card-border: rgb(255 255 255 / 10%);    /* [approx] visible edge on glass; palette border (#191919) is too faint over wallpapers */
     --card-highlight: inset 0 1px 0 rgb(255 255 255 / 7%);
     --card-shadow: 0 14px 32px -16px rgb(0 0 0 / 80%), 0 2px 6px -2px rgb(0 0 0 / 50%);
-    --card-hover-surface: color-mix(in srgb, #141414 94%, transparent);
+    --card-hover-surface: color-mix(in srgb, #181818 94%, transparent);
+    --pill-shadow: 0 12px 28px -12px rgb(0 0 0 / 70%);
     --control-surface: rgb(255 255 255 / 6%);
     --control-surface-hover: rgb(255 255 255 / 11%);
-    --switch-off: rgb(255 255 255 / 18%);
+    --switch-off: var(--border-strong);
   }
+}
+
+/* Derived tokens: redeclared wherever a theme is set, so a nested data-theme re-derives them */
+:root, [data-theme="light"], [data-theme="dark"] {
+  --ring: var(--primary);
+  --focus-ring: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  --card-surface: color-mix(in srgb, var(--popover) var(--glass-opacity-card), transparent);
+  --pill-surface: color-mix(in srgb, var(--popover) var(--glass-opacity-card), transparent);
+  --pill-border: var(--card-border);
+  --pill-foreground: var(--foreground);
+  --pill-muted: var(--muted-foreground);
+  --pill-hover: var(--control-surface-hover);
+  --pill-divider: var(--border);
+  --rail-done: var(--success-foreground);
+  --chip-active: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--foreground);
 }
 
 /* Reduced motion: movement off, short fades kept. data-motion="reduce" lets a demo force it. */
