@@ -8,31 +8,80 @@
 <link rel="stylesheet" href="pet.css">
 <style>
   html { background: var(--background); }
-  body { margin: 0; min-height: 100vh; color: var(--foreground); font: var(--weight-regular) var(--text-base)/1.45 var(--font-sans);
-    background: var(--background); }
-  /* A soft wash behind the window so the frosted surfaces read as glass, as in T3 */
+  body { margin: 0; min-height: 100vh; color: var(--foreground); font: var(--weight-regular) var(--text-base)/1.45 var(--font-sans); background: var(--background); }
+  /* A soft wash behind the window so the frosted surfaces read as glass */
   body::before { content: ""; position: fixed; inset: 0; z-index: -1;
     background: radial-gradient(60% 50% at 15% 0%, color-mix(in srgb, var(--primary) 16%, transparent), transparent 70%),
                 radial-gradient(50% 40% at 100% 30%, color-mix(in srgb, var(--success) 10%, transparent), transparent 70%); }
-  .win { max-width: 680px; margin: 24px auto; border-radius: var(--radius-xl); overflow: hidden;
+
+  /* The settings window */
+  .win { width: min(860px, calc(100vw - 32px)); height: 640px; margin: 24px auto; display: flex; flex-direction: column; overflow: hidden;
+    border-radius: var(--radius-xl); border: 1px solid var(--card-border); box-shadow: var(--card-highlight), var(--card-shadow);
+    background: var(--background); }
+  .titlebar { flex: none; display: flex; align-items: center; justify-content: space-between; height: 36px; padding-left: var(--space-4);
+    border-bottom: 1px solid var(--border);
     background: color-mix(in srgb, var(--background) var(--glass-opacity), transparent);
-    border: 1px solid var(--border); box-shadow: var(--card-shadow); }
-  .win__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
-    padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5;
-    background: color-mix(in srgb, var(--background) 86%, transparent);
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation)); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation)); }
-  h1 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-semibold); }
-  .win__body { padding: var(--space-2) var(--space-5) var(--space-5); }
-  section { margin-top: var(--space-5); }
-  h2 { margin: 0 0 var(--space-2); font-size: var(--text-base); font-weight: var(--weight-semibold); }
+  .titlebar__title { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--muted-foreground); }
+  .wc { display: flex; height: 100%; }
+  .wc button { width: 44px; height: 100%; display: grid; place-items: center; border: 0; background: transparent; color: var(--foreground); cursor: pointer; }
+  .wc button:hover { background: var(--control-surface-hover); }
+  .wc button.wc__close:hover { background: var(--error); color: #fff; }
+  .wc .icon { width: 14px; height: 14px; }
+  .wc button:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--ring); }
+
+  .win__main { flex: 1; min-height: 0; display: flex; }
+  .panes { flex: 1; min-width: 0; overflow-y: auto; padding: var(--space-5); }
+  .pane[hidden] { display: none; }
+  .pane h2 { margin: 0 0 var(--space-3); font-size: var(--text-lg); font-weight: var(--weight-semibold); }
+  .pane h3 { margin: var(--space-5) 0 var(--space-2); font-size: var(--text-base); font-weight: var(--weight-semibold); }
+  .pane h2 + .group, .pane h3 + .group { margin-top: 0; }
+
+  /* Left sidebar, modelled on T3's settings sidebar: 240px wide, 32px rows, selected row uses sidebar-row-selected */
+  .side { flex: none; width: 240px; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2);
+    border-right: 1px solid var(--sidebar-border); background: var(--sidebar); color: var(--sidebar-foreground); overflow-y: auto; }
+  .side__search { display: flex; align-items: center; gap: var(--space-2); height: 32px; padding: 6px var(--space-2); border-radius: var(--radius-md);
+    font-size: var(--text-base); font-weight: var(--weight-medium); color: var(--sidebar-muted-foreground); }
+  .side__search:hover, .side__search:focus-within { background: var(--sidebar-row-hover); color: var(--sidebar-foreground); }
+  .side__search:focus-within { box-shadow: inset 0 0 0 2px var(--ring); }
+  .side__search .icon { width: 16px; height: 16px; color: color-mix(in srgb, var(--sidebar-muted-foreground) 80%, transparent); }
+  .side__search input { all: unset; flex: 1; min-width: 0; font: inherit; color: var(--sidebar-foreground); }
+  .side__search input::placeholder { color: var(--sidebar-muted-foreground); }
+  .side__search kbd { font: var(--weight-medium) 11px/1 var(--font-sans); padding: 2px 5px; border-radius: var(--radius-sm); border: 1px solid var(--sidebar-border); color: var(--sidebar-muted-foreground); }
+  .side__clear { all: unset; display: grid; place-items: center; width: 20px; height: 20px; border-radius: var(--radius-sm); cursor: pointer; color: var(--sidebar-muted-foreground); }
+  .side__clear:hover { background: var(--sidebar-row-active); color: var(--sidebar-foreground); }
+  .side__clear:focus-visible { box-shadow: var(--focus-ring); }
+  .side__clear .icon { width: 12px; height: 12px; }
+  .side__clear[hidden], .side kbd[hidden] { display: none; }
+  .side__tabs { flex: 1; display: flex; flex-direction: column; gap: 4px; min-height: 0; }
+  .side__tabs[hidden], .side__results[hidden], .side__empty[hidden] { display: none; }
+  .nav-item { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: var(--space-2); width: 100%; height: 32px; padding: 6px var(--space-2);
+    border-radius: var(--radius-md); cursor: pointer; font-size: var(--text-base); color: var(--sidebar-muted-foreground); }
+  .nav-item .icon { width: 16px; height: 16px; flex: none; color: var(--sidebar-icon-color); }
+  .nav-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav-item:hover { background: var(--sidebar-row-hover); color: var(--sidebar-foreground); }
+  .nav-item:active { background: var(--sidebar-row-active); }
+  .nav-item:hover .icon, .nav-item[aria-selected="true"] .icon, .nav-item.is-active .icon { color: var(--sidebar-foreground); }
+  .nav-item[aria-selected="true"], .nav-item.is-active { background: var(--sidebar-row-selected); font-weight: var(--weight-medium); color: var(--sidebar-foreground); }
+  .nav-item:focus-visible { box-shadow: inset 0 0 0 2px var(--ring); }
+  .side__spacer { flex: 1; }
+  .side__results { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .side__results .nav-item { height: auto; min-height: 40px; align-items: flex-start; }
+  .nav-item__text { min-width: 0; display: flex; flex-direction: column; }
+  .nav-item__title { font-weight: var(--weight-medium); color: var(--sidebar-foreground); }
+  .nav-item__sec { font-size: 11px; color: color-mix(in srgb, var(--sidebar-muted-foreground) 85%, transparent); }
+  .side__empty { margin: 0; padding: var(--space-5) var(--space-2); text-align: center; font-size: var(--text-sm); color: var(--sidebar-muted-foreground); }
+  mark { background: color-mix(in srgb, var(--primary) 24%, transparent); color: inherit; border-radius: 2px; }
+  .row.is-hit, .group.is-hit { box-shadow: inset 0 0 0 2px var(--primary); background: var(--chip-active); border-radius: var(--radius-md); }
+
   .group { border: 1px solid var(--border); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--card) 70%, transparent); }
   .row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-3) var(--space-4); min-height: 48px; }
   .row + .row, .conflict + .row { border-top: 1px solid var(--border); }
   .row__text { min-width: 0; }
   .row__label { font-weight: var(--weight-medium); }
-  .row__hint { margin: 1px 0 0; font-size: var(--text-sm); color: var(--muted-foreground); max-width: 48ch; }
+  .row__hint { margin: 1px 0 0; font-size: var(--text-sm); color: var(--muted-foreground); max-width: 46ch; }
   .row__ctl { flex: none; display: flex; align-items: center; gap: var(--space-2); }
-  .tools { display: flex; gap: var(--space-2); }
+  .val { font-size: var(--text-sm); color: var(--muted-foreground); text-align: right; max-width: 30ch; }
 
   .seg { display: inline-flex; padding: 2px; border-radius: var(--radius-lg); background: var(--control-surface); }
   .seg button, .btn, select {
@@ -46,32 +95,26 @@
     background-repeat: no-repeat; background-position: right 9px center; }
   :is(.seg button, .btn, select, input[type="range"], .switch, .pet-tile, .key, .step button):focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
-  /* Switch */
-  .switch { position: relative; width: 34px; height: 20px; padding: 0; border: 0; border-radius: var(--radius-pill); background: var(--switch-off); cursor: pointer;
-    transition: background var(--dur-fast) linear; }
-  .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff;
-    box-shadow: 0 1px 2px rgb(0 0 0 / 30%); transition: transform var(--dur-move) var(--ease-out); }
+  .switch { position: relative; width: 34px; height: 20px; padding: 0; border: 0; border-radius: var(--radius-pill); background: var(--switch-off); cursor: pointer; transition: background var(--dur-fast) linear; }
+  .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 30%); transition: transform var(--dur-move) var(--ease-out); }
   .switch[aria-checked="true"] { background: var(--primary); }
   .switch[aria-checked="true"]::after { transform: translateX(14px); }
 
-  /* Stepper */
   .step { display: inline-flex; align-items: center; border-radius: var(--radius-md); background: var(--control-surface); }
   .step button { width: 28px; height: 28px; border: 0; background: transparent; color: var(--foreground); font-size: 16px; cursor: pointer; border-radius: var(--radius-md); }
   .step output { min-width: 28px; text-align: center; font-variant-numeric: tabular-nums; font-weight: var(--weight-medium); }
 
-  /* Pet picker */
   .pets { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: var(--space-2); padding: var(--space-3); }
-  .pet-tile { all: unset; box-sizing: border-box; cursor: pointer; display: grid; justify-items: center; gap: 2px; padding: var(--space-2) var(--space-2) var(--space-2);
+  .pet-tile { all: unset; box-sizing: border-box; cursor: pointer; display: grid; justify-items: center; gap: 2px; padding: var(--space-2);
     border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--control-surface); }
   .pet-tile:hover { background: var(--control-surface-hover); }
-  .pet-tile[aria-checked="true"] { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
+  .pet-tile[aria-checked="true"] { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); background: var(--chip-active); }
   .pet-tile { --pet-scale: 0.36; --pet-w: calc(var(--pet-frame-w) * var(--pet-scale) * 1px); --pet-h: calc(var(--pet-frame-h) * var(--pet-scale) * 1px); }
   .pet-tile__name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
   .pet-tile--add { align-content: center; border-style: dashed; color: var(--muted-foreground); min-height: 98px; text-align: center; font-size: var(--text-sm); }
   .pet-tile--add .icon { width: 20px; height: 20px; }
   .hue1 .pet { filter: hue-rotate(150deg) saturate(1.2); } .hue2 .pet { filter: hue-rotate(260deg); } .hue3 .pet { filter: grayscale(0.9) brightness(1.1); }
 
-  /* Key capture */
   .key { all: unset; box-sizing: border-box; cursor: pointer; min-width: 84px; padding: 6px 10px; text-align: center; border-radius: var(--radius-md);
     border: 1px solid var(--input); background: var(--control-surface); font: var(--weight-medium) var(--text-sm)/1.2 var(--font-mono); }
   .key:hover { background: var(--control-surface-hover); }
@@ -84,20 +127,30 @@
   .reset:focus-visible { box-shadow: var(--focus-ring); }
   .reset[hidden] { display: none; }
 
-  /* Hover radius preview */
   .radius-demo { display: grid; place-items: center; height: 170px; margin: 0 var(--space-4) var(--space-3); border-radius: var(--radius-lg); overflow: hidden;
     background: linear-gradient(180deg, #f6c18f, #e0907f 55%, #7a5683); position: relative; }
   .radius-demo .ring { position: absolute; left: 50%; top: 50%; border-radius: 50%; transform: translate(-50%, -50%);
     border: 1.5px dashed rgb(255 255 255 / 85%); background: rgb(255 255 255 / 12%); transition: width var(--dur-move) var(--ease-out), height var(--dur-move) var(--ease-out); }
   .radius-demo .pet-wrap { position: relative; z-index: 1; }
-  .radius-demo .tag { position: absolute; right: 10px; bottom: 8px; z-index: 2; padding: 3px 8px; border-radius: var(--radius-pill); background: var(--pill-surface); color: var(--pill-foreground); font-size: var(--text-xs); font-variant-numeric: tabular-nums; }
+  .radius-demo .tag { position: absolute; right: 10px; bottom: 8px; z-index: 2; padding: 3px 8px; border-radius: var(--radius-pill); background: var(--pill-surface); color: var(--pill-foreground); border: 1px solid var(--pill-border); font-size: var(--text-xs); font-variant-numeric: tabular-nums; }
   input[type="range"] { width: 200px; accent-color: var(--primary); }
   .note { display: flex; gap: var(--space-2); align-items: flex-start; padding: var(--space-3) var(--space-4); color: var(--muted-foreground); font-size: var(--text-sm); }
-  .note .icon { width: 16px; height: 16px; margin-top: 1px; }
-  .note code { font: var(--text-sm) var(--font-mono); color: var(--foreground); }
+  .note .icon { width: 16px; height: 16px; margin-top: 1px; flex: none; }
+  .note code, code { font: var(--text-sm) var(--font-mono); color: var(--foreground); }
+  .live-note { display: flex; gap: var(--space-2); align-items: flex-start; margin: 0 0 var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg);
+    background: var(--chip-active); font-size: var(--text-sm); }
+  .live-note .icon { width: 16px; height: 16px; margin-top: 1px; flex: none; color: var(--primary); }
   .disabled-note { opacity: 0.5; }
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  @media (max-width: 560px) { .row { flex-wrap: wrap; } .win__body { padding-inline: var(--space-4); } }
+
+  @media (max-width: 640px) {
+    .win { height: auto; min-height: 640px; }
+    .win__main { flex-direction: column; }
+    .side { width: auto; border-right: 0; border-bottom: 1px solid var(--sidebar-border); max-height: 220px; }
+    .side__tabs { flex-direction: row; flex-wrap: wrap; }
+    .nav-item { width: auto; }
+    .side__spacer { display: none; }
+    .row { flex-wrap: wrap; }
+  }
 </style>
 </head>
 <body>
@@ -106,137 +159,285 @@
   <symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-settings-2" viewBox="0 0 24 24"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></symbol>
+  <symbol id="i-paw-print" viewBox="0 0 24 24"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></symbol>
+  <symbol id="i-keyboard" viewBox="0 0 24 24"><path d="M10 8h.01"/><path d="M12 12h.01"/><path d="M14 8h.01"/><path d="M16 12h.01"/><path d="M18 8h.01"/><path d="M6 8h.01"/><path d="M7 16h10"/><path d="M8 12h.01"/><rect width="20" height="16" x="2" y="4" rx="2"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-square" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
 </svg>
 
-<main class="win">
-  <header class="win__head">
-    <h1>Pet settings</h1>
-    <div class="seg" role="group" aria-label="Preview theme">
-      <button type="button" data-theme-set="auto" aria-pressed="true">Match system</button>
-      <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
-      <button type="button" data-theme-set="dark" aria-pressed="false">Dark</button>
+<main class="win" role="dialog" aria-label="T3 Pet settings">
+  <div class="titlebar">
+    <span class="titlebar__title">T3 Pet settings</span>
+    <div class="wc">
+      <button type="button" aria-label="Minimise"><svg class="icon"><use href="#i-minus"/></svg></button>
+      <button type="button" aria-label="Maximise"><svg class="icon"><use href="#i-square"/></svg></button>
+      <button type="button" class="wc__close" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
     </div>
-  </header>
+  </div>
 
-  <div class="win__body">
-    <section aria-labelledby="h-pet">
-      <h2 id="h-pet">Pet</h2>
-      <div class="group">
-        <div class="pets" role="radiogroup" aria-label="Choose your pet" id="pets">
-          <button class="pet-tile" role="radio" aria-checked="true" tabindex="0" type="button"><div class="pet-wrap"><div class="pet"></div></div><span class="pet-tile__name">Boba</span></button>
-          <button class="pet-tile hue1" role="radio" aria-checked="false" tabindex="-1" type="button"><div class="pet-wrap"><div class="pet"></div></div><span class="pet-tile__name">Sprout</span></button>
-          <button class="pet-tile hue2" role="radio" aria-checked="false" tabindex="-1" type="button"><div class="pet-wrap"><div class="pet"></div></div><span class="pet-tile__name">Ember</span></button>
-          <button class="pet-tile hue3" role="radio" aria-checked="false" tabindex="-1" type="button"><div class="pet-wrap"><div class="pet"></div></div><span class="pet-tile__name">Pebble</span></button>
-          <button class="pet-tile pet-tile--add" type="button"><svg class="icon"><use href="#i-plus"/></svg>Add a pet folder</button>
-        </div>
-        <p class="note"><svg class="icon"><use href="#i-info"/></svg><span>Pets are read from <code>~/.petdex/pets</code>. Each folder needs a <code>pet.json</code> and a spritesheet.</span></p>
+  <div class="win__main">
+    <nav class="side" aria-label="Settings">
+      <div class="side__search" role="search">
+        <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+        <input id="q" type="text" placeholder="Search" aria-label="Search settings" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="results" autocomplete="off">
+        <button type="button" class="side__clear" id="clear" aria-label="Clear settings search" hidden><svg class="icon"><use href="#i-x"/></svg></button>
+        <kbd id="slash" aria-hidden="true">/</kbd>
       </div>
-    </section>
+      <div class="side__tabs" id="side" role="tablist" aria-orientation="vertical" aria-label="Settings sections">
+        <button class="nav-item" type="button" role="tab" id="t-general" aria-controls="p-general" aria-selected="true" tabindex="0"><svg class="icon" aria-hidden="true"><use href="#i-settings-2"/></svg><span>General</span></button>
+        <button class="nav-item" type="button" role="tab" id="t-pets" aria-controls="p-pets" aria-selected="false" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-paw-print"/></svg><span>Pets</span></button>
+        <button class="nav-item" type="button" role="tab" id="t-cards" aria-controls="p-cards" aria-selected="false" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><span>Cards</span></button>
+        <button class="nav-item" type="button" role="tab" id="t-keyboard" aria-controls="p-keyboard" aria-selected="false" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-keyboard"/></svg><span>Keyboard</span></button>
+        <button class="nav-item" type="button" role="tab" id="t-appearance" aria-controls="p-appearance" aria-selected="false" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg><span>Appearance</span></button>
+        <span class="side__spacer"></span>
+        <button class="nav-item" type="button" role="tab" id="t-about" aria-controls="p-about" aria-selected="false" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span>About</span></button>
+      </div>
+      <ul class="side__results" id="results" role="listbox" aria-label="Settings search results" hidden></ul>
+      <p class="side__empty" id="empty" role="status" hidden>No settings match</p>
+    </nav>
 
-    <section aria-labelledby="h-cards">
-      <h2 id="h-cards">Cards</h2>
-      <div class="group">
-        <div class="row">
-          <div class="row__text"><div class="row__label" id="l-failed">Show failed runs</div><p class="row__hint">Off means only completed threads get a card.</p></div>
-          <div class="row__ctl"><button class="switch" role="switch" aria-checked="true" aria-labelledby="l-failed" type="button"></button></div>
-        </div>
-        <div class="row">
-          <div class="row__text"><div class="row__label" id="l-max">Cards in the stack</div><p class="row__hint">Older ones are dropped from the stack, not from T3.</p></div>
-          <div class="row__ctl"><div class="step" role="group" aria-labelledby="l-max"><button type="button" aria-label="Fewer cards">&minus;</button><output id="max-out" aria-live="polite">5</output><button type="button" aria-label="More cards">+</button></div></div>
-        </div>
-        <div class="row">
-          <div class="row__text"><div class="row__label"><label for="auto">Remove cards after</label></div><p class="row__hint">Dismissed or opened cards are removed straight away.</p></div>
-          <div class="row__ctl"><select id="auto"><option>Never</option><option>15 minutes</option><option selected>1 hour</option><option>1 day</option></select></div>
-        </div>
-        <div class="row">
-          <div class="row__text"><div class="row__label" id="l-open">Open chats in</div><p class="row__hint">Clicking a card opens the thread in the T3 Code desktop app, never in a browser.</p></div>
-          <div class="row__ctl"><span class="btn" aria-labelledby="l-open" style="cursor:default">T3 Code desktop</span></div>
-        </div>
-      </div>
-    </section>
+    <div class="panes">
 
-    <section aria-labelledby="h-keys">
-      <h2 id="h-keys">Keyboard</h2>
-      <div class="group" id="keys">
-        <div class="row" data-key-row="prev" data-default="ArrowUp">
-          <div class="row__text"><div class="row__label">Previous card</div><p class="row__hint">Works while your pointer is over the cards.</p></div>
-          <div class="row__ctl"><button class="reset" type="button" aria-label="Reset Previous card to Up arrow" hidden><svg class="icon" style="width:15px;height:15px"><use href="#i-rotate-ccw"/></svg></button><button class="key" type="button" aria-label="Previous card shortcut, Up arrow. Press to change.">&uarr; Up</button></div>
+      <section class="pane" id="p-general" role="tabpanel" aria-labelledby="t-general">
+        <h2>General</h2>
+        <div class="group">
+          <div class="row">
+            <div class="row__text"><div class="row__label" id="l-login">Launch at login</div><p class="row__hint">Start the pet when you sign in to your computer.</p></div>
+            <div class="row__ctl"><button class="switch" role="switch" aria-checked="false" aria-labelledby="l-login" type="button"></button></div>
+          </div>
+          <div class="row">
+            <div class="row__text"><div class="row__label" id="l-poll">Check for finished runs every</div><p class="row__hint" id="poll-hint">Cards appear within about a second.</p></div>
+            <div class="row__ctl"><div class="seg" role="radiogroup" aria-labelledby="l-poll" id="poll">
+              <button type="button" role="radio" aria-checked="true" data-hint="Cards appear within about a second.">1 s</button>
+              <button type="button" role="radio" aria-checked="false" data-hint="Cards appear within about 5 seconds. Lighter on battery.">5 s</button>
+              <button type="button" role="radio" aria-checked="false" data-hint="Cards can take up to 30 seconds to appear. Lightest on your computer.">30 s</button>
+            </div></div>
+          </div>
+          <div class="row">
+            <div class="row__text"><div class="row__label" id="l-open">Open chats in</div><p class="row__hint">Clicking a card opens the thread in the T3 Code desktop app, never in a browser.</p></div>
+            <div class="row__ctl"><span class="val" aria-labelledby="l-open">T3 Code desktop</span></div>
+          </div>
         </div>
-        <p class="conflict" role="alert"></p>
-        <div class="row" data-key-row="next" data-default="ArrowDown">
-          <div class="row__text"><div class="row__label">Next card</div></div>
-          <div class="row__ctl"><button class="reset" type="button" aria-label="Reset Next card to Down arrow" hidden><svg class="icon" style="width:15px;height:15px"><use href="#i-rotate-ccw"/></svg></button><button class="key" type="button" aria-label="Next card shortcut, Down arrow. Press to change.">&darr; Down</button></div>
-        </div>
-        <p class="conflict" role="alert"></p>
-        <div class="row" data-key-row="open" data-default="Enter">
-          <div class="row__text"><div class="row__label">Open thread</div></div>
-          <div class="row__ctl"><button class="reset" type="button" aria-label="Reset Open thread to Enter" hidden><svg class="icon" style="width:15px;height:15px"><use href="#i-rotate-ccw"/></svg></button><button class="key" type="button" aria-label="Open thread shortcut, Enter. Press to change.">Enter</button></div>
-        </div>
-        <p class="conflict" role="alert"></p>
-        <div class="row" data-key-row="dismiss" data-default="Delete">
-          <div class="row__text"><div class="row__label">Dismiss card</div></div>
-          <div class="row__ctl"><button class="reset" type="button" aria-label="Reset Dismiss card to Delete" hidden><svg class="icon" style="width:15px;height:15px"><use href="#i-rotate-ccw"/></svg></button><button class="key" type="button" aria-label="Dismiss card shortcut, Delete. Press to change.">Delete</button></div>
-        </div>
-        <p class="conflict" role="alert"></p>
-      </div>
-    </section>
+      </section>
 
-    <section aria-labelledby="h-look">
-      <h2 id="h-look">Behaviour and look</h2>
-      <div class="group">
-        <div class="row">
-          <div class="row__text"><div class="row__label" id="l-track">Head and eyes follow the pointer</div><p class="row__hint">Needs a pet with gaze frames. Others stay on their idle pose.</p></div>
-          <div class="row__ctl"><button class="switch" role="switch" aria-checked="true" aria-labelledby="l-track" type="button" id="track"></button></div>
+      <section class="pane" id="p-pets" role="tabpanel" aria-labelledby="t-pets" hidden>
+        <h2>Pets</h2>
+        <div class="group">
+          <div class="pets" role="radiogroup" aria-label="Choose your pet" id="pet-picker">
+            <button class="pet-tile" role="radio" aria-checked="true" tabindex="0" type="button"><div class="pet-wrap"><div class="pet"></div></div><span class="pet-tile__name">Boba</span></button>
+            <button class="pet-tile hue1" role="radio" aria-checked="false" tabindex="-1" type="button"><div class="pet-wrap"><div class="pet"></div></div><span class="pet-tile__name">Sprout</span></button>
+            <button class="pet-tile hue2" role="radio" aria-checked="false" tabindex="-1" type="button"><div class="pet-wrap"><div class="pet"></div></div><span class="pet-tile__name">Ember</span></button>
+            <button class="pet-tile hue3" role="radio" aria-checked="false" tabindex="-1" type="button"><div class="pet-wrap"><div class="pet"></div></div><span class="pet-tile__name">Pebble</span></button>
+            <button class="pet-tile pet-tile--add" type="button"><svg class="icon"><use href="#i-plus"/></svg>Add a pet folder</button>
+          </div>
+          <p class="note"><svg class="icon"><use href="#i-info"/></svg><span>Pets are read from <code>~/.petdex/pets</code>. Each folder needs a <code>pet.json</code> and a spritesheet.</span></p>
         </div>
-        <div class="row" id="radius-row">
-          <div class="row__text"><div class="row__label"><label for="radius">Hover radius</label></div><p class="row__hint">How close the pointer must be for the pet to notice it.</p></div>
-          <div class="row__ctl"><input id="radius" type="range" min="80" max="400" step="10" value="220" aria-valuetext="220 pixels"></div>
+        <h3>Following the pointer</h3>
+        <div class="group">
+          <div class="row">
+            <div class="row__text"><div class="row__label" id="l-track">Head and eyes follow the pointer</div><p class="row__hint">Needs a pet with gaze frames. Others stay on their idle pose.</p></div>
+            <div class="row__ctl"><button class="switch" role="switch" aria-checked="true" aria-labelledby="l-track" type="button" id="track"></button></div>
+          </div>
+          <div class="row" id="radius-row">
+            <div class="row__text"><div class="row__label"><label for="radius">Hover radius</label></div><p class="row__hint">How close the pointer must be for the pet to notice it.</p></div>
+            <div class="row__ctl"><input id="radius" type="range" min="80" max="400" step="10" value="220" aria-valuetext="220 pixels"></div>
+          </div>
+          <div class="radius-demo" aria-hidden="true"><div class="ring" id="ring"></div><div class="pet-wrap"><div class="pet"></div></div><span class="tag" id="radius-tag">220 px</span></div>
         </div>
-        <div class="radius-demo" aria-hidden="true"><div class="ring" id="ring"></div><div class="pet-wrap"><div class="pet"></div></div><span class="tag" id="radius-tag">220 px</span></div>
-        <div class="row">
-          <div class="row__text"><div class="row__label" id="l-theme">Follow the T3 Code theme</div><p class="row__hint">Cards and this window switch with T3's light and dark themes. The pill stays dark.</p></div>
-          <div class="row__ctl"><button class="switch" role="switch" aria-checked="true" aria-labelledby="l-theme" type="button"></button></div>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <section aria-labelledby="h-sys">
-      <h2 id="h-sys">System</h2>
-      <div class="group">
-        <div class="row">
-          <div class="row__text"><div class="row__label" id="l-poll">Check for finished runs</div><p class="row__hint" id="poll-hint">Live updates react as soon as T3 changes, with no timer.</p></div>
-          <div class="row__ctl"><div class="seg" role="radiogroup" aria-labelledby="l-poll" id="poll">
-            <button type="button" role="radio" aria-checked="true" data-hint="Live updates react as soon as T3 changes, with no timer.">Live</button>
-            <button type="button" role="radio" aria-checked="false" data-hint="Checks every second. Quickest fallback, a little more work in the background.">1 s</button>
-            <button type="button" role="radio" aria-checked="false" data-hint="Checks every 5 seconds. Gentle on battery.">5 s</button>
-            <button type="button" role="radio" aria-checked="false" data-hint="Checks every 30 seconds. Cards may arrive late.">30 s</button>
-          </div></div>
+      <section class="pane" id="p-cards" role="tabpanel" aria-labelledby="t-cards" hidden>
+        <h2>Cards</h2>
+        <div class="group">
+          <div class="row">
+            <div class="row__text"><div class="row__label" id="l-failed">Show failed runs</div><p class="row__hint">Off means only completed threads get a card.</p></div>
+            <div class="row__ctl"><button class="switch" role="switch" aria-checked="true" aria-labelledby="l-failed" type="button"></button></div>
+          </div>
+          <div class="row">
+            <div class="row__text"><div class="row__label" id="l-meta">Show provider and project</div><p class="row__hint">A small line under each card, such as "Claude, web-app".</p></div>
+            <div class="row__ctl"><button class="switch" role="switch" aria-checked="true" aria-labelledby="l-meta" type="button"></button></div>
+          </div>
+          <div class="row">
+            <div class="row__text"><div class="row__label" id="l-max">Cards in the stack</div><p class="row__hint">Older ones are dropped from the stack, not from T3.</p></div>
+            <div class="row__ctl"><div class="step" role="group" aria-labelledby="l-max"><button type="button" aria-label="Fewer cards">&minus;</button><output id="max-out" aria-live="polite">5</output><button type="button" aria-label="More cards">+</button></div></div>
+          </div>
+          <div class="row">
+            <div class="row__text"><div class="row__label"><label for="auto">Remove cards after</label></div><p class="row__hint">Dismissed or opened cards are removed straight away.</p></div>
+            <div class="row__ctl"><select id="auto"><option>Never</option><option>15 minutes</option><option selected>1 hour</option><option>1 day</option></select></div>
+          </div>
         </div>
-        <div class="row">
-          <div class="row__text"><div class="row__label" id="l-login">Launch at login</div></div>
-          <div class="row__ctl"><button class="switch" role="switch" aria-checked="false" aria-labelledby="l-login" type="button"></button></div>
+      </section>
+
+      <section class="pane" id="p-keyboard" role="tabpanel" aria-labelledby="t-keyboard" hidden>
+        <h2>Keyboard</h2>
+        <p class="live-note"><svg class="icon"><use href="#i-info"/></svg><span>Keys work while your pointer is over the cards. The pet takes focus when you hover and gives it back when you leave. The n / total control is outlined while the keys are live.</span></p>
+        <div class="group" id="keys">
+          <div class="row" data-key-row="prev" data-default="ArrowUp">
+            <div class="row__text"><div class="row__label">Previous card</div></div>
+            <div class="row__ctl"><button class="reset" type="button" aria-label="Reset Previous card to Up arrow" hidden><svg class="icon" style="width:15px;height:15px"><use href="#i-rotate-ccw"/></svg></button><button class="key" type="button" aria-label="Previous card shortcut, Up arrow. Press to change.">&uarr; Up</button></div>
+          </div>
+          <p class="conflict" role="alert"></p>
+          <div class="row" data-key-row="next" data-default="ArrowDown">
+            <div class="row__text"><div class="row__label">Next card</div></div>
+            <div class="row__ctl"><button class="reset" type="button" aria-label="Reset Next card to Down arrow" hidden><svg class="icon" style="width:15px;height:15px"><use href="#i-rotate-ccw"/></svg></button><button class="key" type="button" aria-label="Next card shortcut, Down arrow. Press to change.">&darr; Down</button></div>
+          </div>
+          <p class="conflict" role="alert"></p>
+          <div class="row" data-key-row="open" data-default="Enter">
+            <div class="row__text"><div class="row__label">Open thread</div></div>
+            <div class="row__ctl"><button class="reset" type="button" aria-label="Reset Open thread to Enter" hidden><svg class="icon" style="width:15px;height:15px"><use href="#i-rotate-ccw"/></svg></button><button class="key" type="button" aria-label="Open thread shortcut, Enter. Press to change.">Enter</button></div>
+          </div>
+          <p class="conflict" role="alert"></p>
+          <div class="row" data-key-row="dismiss" data-default="Delete">
+            <div class="row__text"><div class="row__label">Dismiss card</div></div>
+            <div class="row__ctl"><button class="reset" type="button" aria-label="Reset Dismiss card to Delete" hidden><svg class="icon" style="width:15px;height:15px"><use href="#i-rotate-ccw"/></svg></button><button class="key" type="button" aria-label="Dismiss card shortcut, Delete. Press to change.">Delete</button></div>
+          </div>
+          <p class="conflict" role="alert"></p>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section class="pane" id="p-appearance" role="tabpanel" aria-labelledby="t-appearance" hidden>
+        <h2>Appearance</h2>
+        <div class="group">
+          <div class="row">
+            <div class="row__text"><div class="row__label" id="l-theme">Theme</div><p class="row__hint">Match system follows your computer's light or dark setting. The chip, cards, menus and this window all use the same theme.</p></div>
+            <div class="row__ctl"><div class="seg" role="radiogroup" aria-labelledby="l-theme" id="theme-seg">
+              <button type="button" role="radio" aria-checked="true" data-theme-set="auto">Match system</button>
+              <button type="button" role="radio" aria-checked="false" data-theme-set="light">Light</button>
+              <button type="button" role="radio" aria-checked="false" data-theme-set="dark">Dark</button>
+            </div></div>
+          </div>
+          <div class="row">
+            <div class="row__text"><div class="row__label"><label for="motion">Motion</label></div><p class="row__hint">Reduced motion removes sliding and scaling. Cards still fade in and out.</p></div>
+            <div class="row__ctl"><select id="motion"><option selected>Match system</option><option>Reduce</option><option>Full</option></select></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane" id="p-about" role="tabpanel" aria-labelledby="t-about" hidden>
+        <h2>About</h2>
+        <div class="group">
+          <div class="row"><div class="row__text"><div class="row__label">Version</div></div><div class="row__ctl"><span class="val">0.0.0 (design mockup)</span></div></div>
+          <div class="row"><div class="row__text"><div class="row__label">Pet format</div><p class="row__hint">Petdex-compatible folders: <code>pet.json</code> and a spritesheet of 192 by 208 px frames.</p></div></div>
+          <div class="row"><div class="row__text"><div class="row__label">Icons</div><p class="row__hint">Lucide, ISC licence.</p></div></div>
+        </div>
+      </section>
+    </div>
+
+
   </div>
 </main>
 
 <script>
 (function () {
   var root = document.documentElement;
-  document.querySelectorAll('[data-theme-set]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var v = b.dataset.themeSet;
-      if (v === 'auto') root.removeAttribute('data-theme'); else root.dataset.theme = v;
-      document.querySelectorAll('[data-theme-set]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+
+  /* Sections: vertical tab list on the right */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('#side [role="tab"]'));
+  function show(tab, focus) {
+    tabs.forEach(function (t) {
+      var on = t === tab;
+      t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+    if (focus) tab.focus();
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function () { show(t, false); });
+    t.addEventListener('keydown', function (e) {
+      var d = { ArrowDown: 1, ArrowUp: -1 }[e.key];
+      if (e.key === 'Home') d = -i; else if (e.key === 'End') d = tabs.length - 1 - i;
+      if (d === undefined) return;
+      e.preventDefault(); show(tabs[Math.max(0, Math.min(tabs.length - 1, i + d))], true);
     });
   });
+  var h = (location.hash || '').slice(1);
+  var start = document.getElementById('t-' + h);
+  if (start) show(start, false);
+
+  /* Search: results replace the section list in the sidebar, as in T3 */
+  var q = document.getElementById('q'), clearBtn = document.getElementById('clear'), slash = document.getElementById('slash');
+  var tabsBox = document.getElementById('side'), resultsEl = document.getElementById('results'), emptyEl = document.getElementById('empty');
+  var index = [], hits = [], active = 0;
+  document.querySelectorAll('.pane').forEach(function (p) {
+    var sec = p.querySelector('h2').textContent, tab = document.querySelector('[aria-controls="' + p.id + '"]');
+    p.querySelectorAll('.row').forEach(function (row) {
+      var l = row.querySelector('.row__label'); if (!l) return;
+      var hint = row.querySelector('.row__hint');
+      index.push({ el: row, pane: p, tab: tab, title: l.textContent.trim(), hint: hint ? hint.textContent : '', section: sec });
+    });
+  });
+  index.push({ el: document.getElementById('pet-picker').parentNode, pane: document.getElementById('p-pets'), tab: document.getElementById('t-pets'), title: 'Choose your pet', hint: 'boba sprout ember pebble folder', section: 'Pets' });
+  function esc(x) { var d = document.createElement('div'); d.textContent = x; return d.innerHTML; }
+  function mark(text, words) {
+    var out = esc(text);
+    words.forEach(function (w) { out = out.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>'); });
+    return out;
+  }
+  function clearHits() { document.querySelectorAll('.is-hit').forEach(function (n) { n.classList.remove('is-hit'); }); }
+  function go(item) {
+    clearHits(); show(item.tab, false); item.el.classList.add('is-hit'); item.el.scrollIntoView({ block: 'nearest' });
+  }
+  function renderResults() {
+    var words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean), searching = words.length > 0;
+    clearBtn.hidden = !searching; slash.hidden = searching; tabsBox.hidden = searching;
+    if (!searching) { resultsEl.hidden = true; emptyEl.hidden = true; q.setAttribute('aria-expanded', 'false'); q.removeAttribute('aria-activedescendant'); clearHits(); return; }
+    hits = index.filter(function (it) { var hay = (it.title + ' ' + it.hint + ' ' + it.section).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) > -1; }); });
+    active = Math.min(active, Math.max(hits.length - 1, 0));
+    emptyEl.hidden = hits.length > 0; resultsEl.hidden = hits.length === 0;
+    q.setAttribute('aria-expanded', String(hits.length > 0));
+    resultsEl.innerHTML = '';
+    hits.forEach(function (it, i) {
+      var li = document.createElement('li'); li.setAttribute('role', 'presentation');
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'nav-item' + (i === active ? ' is-active' : ''); b.id = 'res-' + i;
+      b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(i === active)); b.tabIndex = -1;
+      b.innerHTML = '<svg class="icon" aria-hidden="true">' + it.tab.querySelector('svg').innerHTML + '</svg><span class="nav-item__text"><span class="nav-item__title">' + mark(it.title, words) + '</span><span class="nav-item__sec">' + esc(it.section) + '</span></span>';
+      b.addEventListener('mousemove', function () { active = i; refreshActive(); });
+      b.addEventListener('click', function () { go(it); });
+      li.appendChild(b); resultsEl.appendChild(li);
+    });
+    if (hits[active]) q.setAttribute('aria-activedescendant', 'res-' + active);
+  }
+  function refreshActive() {
+    Array.prototype.forEach.call(resultsEl.querySelectorAll('.nav-item'), function (b, i) { b.classList.toggle('is-active', i === active); b.setAttribute('aria-selected', String(i === active)); });
+    q.setAttribute('aria-activedescendant', 'res-' + active);
+  }
+  q.addEventListener('input', function () { active = 0; renderResults(); });
+  q.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && q.value) { e.preventDefault(); q.value = ''; renderResults(); return; }
+    if (!hits.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); active = (active + 1) % hits.length; refreshActive(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); active = (active - 1 + hits.length) % hits.length; refreshActive(); }
+    else if (e.key === 'Enter') { e.preventDefault(); go(hits[active]); }
+  });
+  clearBtn.addEventListener('click', function () { q.value = ''; renderResults(); q.focus(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === '/' && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName) && document.activeElement.dataset.listening !== 'true') { e.preventDefault(); q.focus(); }
+  });
+
+  /* Theme control (Match system, Light, Dark) */
+  var themeBtns = document.querySelectorAll('[data-theme-set]');
+  function syncTheme() {
+    var cur = root.getAttribute('data-theme') || 'auto';
+    themeBtns.forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.themeSet === cur)); });
+  }
+  themeBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = b.dataset.themeSet;
+      if (v === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', v);
+    });
+  });
+  new MutationObserver(syncTheme).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  syncTheme();
 
   var probe = new Image();
   probe.onerror = function () { document.querySelectorAll('.pet').forEach(function (p) { p.classList.add('is-blob'); }); };
   probe.src = 'assets/boba-spritesheet.webp';
 
-  /* Switches */
   document.querySelectorAll('.switch').forEach(function (s) {
     s.addEventListener('click', function () { s.setAttribute('aria-checked', String(s.getAttribute('aria-checked') !== 'true')); });
   });
@@ -247,14 +448,12 @@
     document.querySelector('.radius-demo').style.opacity = on ? 1 : 0.4;
   });
 
-  /* Stepper */
   var max = 5, out = document.getElementById('max-out');
   document.querySelectorAll('.step button').forEach(function (b, i) {
     b.addEventListener('click', function () { max = Math.max(2, Math.min(8, max + (i ? 1 : -1))); out.textContent = max; });
   });
 
-  /* Pet picker: radio group with arrow keys */
-  var tiles = Array.prototype.slice.call(document.querySelectorAll('#pets [role="radio"]'));
+  var tiles = Array.prototype.slice.call(document.querySelectorAll('#pet-picker [role="radio"]'));
   function pick(t) { tiles.forEach(function (o) { var on = o === t; o.setAttribute('aria-checked', String(on)); o.tabIndex = on ? 0 : -1; }); t.focus(); }
   tiles.forEach(function (t, i) {
     t.addEventListener('click', function () { pick(t); });
@@ -264,7 +463,6 @@
     });
   });
 
-  /* Poll segmented radio */
   var poll = document.querySelectorAll('#poll [role="radio"]');
   poll.forEach(function (b) {
     b.addEventListener('click', function () {
@@ -272,8 +470,8 @@
       document.getElementById('poll-hint').textContent = b.dataset.hint;
     });
   });
+  themeBtns.forEach(function () {});
 
-  /* Hover radius */
   var r = document.getElementById('radius'), ring = document.getElementById('ring'), tag = document.getElementById('radius-tag');
   function setR() { var v = +r.value; ring.style.width = ring.style.height = Math.min(v, 330) * 0.78 + 'px'; tag.textContent = v + ' px'; r.setAttribute('aria-valuetext', v + ' pixels'); }
   r.addEventListener('input', setR); setR();
@@ -283,7 +481,7 @@
   var NAME = { ArrowUp: 'Up arrow', ArrowDown: 'Down arrow', ArrowLeft: 'Left arrow', ArrowRight: 'Right arrow', ' ': 'Space' };
   var rows = Array.prototype.slice.call(document.querySelectorAll('[data-key-row]'));
   rows.forEach(function (row) { row.dataset.value = row.dataset.default; });
-  function show(row) {
+  function showKey(row) {
     var v = row.dataset.value, btn = row.querySelector('.key'), reset = row.querySelector('.reset'), act = row.querySelector('.row__label').textContent;
     btn.textContent = LABEL[v] || v; btn.dataset.listening = 'false';
     btn.setAttribute('aria-label', act + ' shortcut, ' + (NAME[v] || v) + '. Press to change.');
@@ -292,21 +490,21 @@
   rows.forEach(function (row) {
     var btn = row.querySelector('.key'), reset = row.querySelector('.reset'), msg = row.nextElementSibling;
     btn.addEventListener('click', function () { btn.dataset.listening = 'true'; btn.textContent = 'Press a key…'; msg.dataset.show = 'false'; btn.dataset.conflict = 'false'; });
-    btn.addEventListener('blur', function () { if (btn.dataset.listening === 'true') show(row); });
+    btn.addEventListener('blur', function () { if (btn.dataset.listening === 'true') showKey(row); });
     btn.addEventListener('keydown', function (e) {
       if (btn.dataset.listening !== 'true') return;
       if (['Shift', 'Control', 'Alt', 'Meta', 'Tab'].indexOf(e.key) > -1) return;
       e.preventDefault();
-      if (e.key === 'Escape') { show(row); return; }
+      if (e.key === 'Escape') { showKey(row); return; }
       var clash = rows.filter(function (o) { return o !== row && o.dataset.value === e.key; })[0];
       if (clash) {
-        btn.dataset.conflict = 'true'; msg.textContent = (LABEL[e.key] || e.key) + ' is already used for "' + clash.querySelector('.row__label').textContent + '". Pick another key.';
-        msg.dataset.show = 'true'; show(row); btn.dataset.conflict = 'true'; return;
+        msg.textContent = (LABEL[e.key] || e.key) + ' is already used for "' + clash.querySelector('.row__label').textContent + '". Pick another key.';
+        msg.dataset.show = 'true'; showKey(row); btn.dataset.conflict = 'true'; return;
       }
       btn.dataset.conflict = 'false'; msg.dataset.show = 'false';
-      row.dataset.value = e.key; show(row);
+      row.dataset.value = e.key; showKey(row);
     });
-    reset.addEventListener('click', function () { row.dataset.value = row.dataset.default; msg.dataset.show = 'false'; btn.dataset.conflict = 'false'; show(row); btn.focus(); });
+    reset.addEventListener('click', function () { row.dataset.value = row.dataset.default; msg.dataset.show = 'false'; btn.dataset.conflict = 'false'; showKey(row); btn.focus(); });
   });
 })();
 </script>
