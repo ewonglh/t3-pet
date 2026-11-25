@@ -71,6 +71,17 @@ function computeStatus(db, now = Date.now()) {
   return { state: 'idle', title: '', count: 0, key: 'idle' };
 }
 
+// The most recently finished runs (up to 5), newest first, in the shape onRunCompleted emits.
+function finishedRuns(db) {
+  return stmts(db).finished.all().map((r) => ({
+    runId: r.run_id,
+    threadId: r.thread_id || null,
+    title: r.title || '',
+    outcome: r.status === 'failed' ? 'failed' : 'completed',
+    completedAt: parseTime(r.completed_at),
+  }));
+}
+
 // Most recent thread title, used as the bubble caption for demo hotkeys.
 function latestTitle(db) {
   try {
@@ -83,4 +94,4 @@ function latestTitle(db) {
   }
 }
 
-module.exports = { computeStatus, latestTitle, parseTime, RECENT_MS };
+module.exports = { computeStatus, finishedRuns, latestTitle, parseTime, RECENT_MS };

@@ -4,7 +4,7 @@
 'use strict';
 const path = require('node:path');
 const { app, BrowserWindow, screen, ipcMain, Tray, Menu, globalShortcut, shell } = require('electron');
-const { T3Status } = require('./status/t3-status');
+const { createStatusSource } = require('./status');
 const { readEnvironmentId } = require('./status/environment');
 const { trayImage } = require('./main/icon');
 const { buildThreadLink } = require('./main/thread-link');
@@ -235,9 +235,9 @@ app.whenReady().then(() => {
   tray.on('click', () => tray.popUpContextMenu());
   registerHotkeys();
 
-  t3 = new T3Status({ log: (m) => console.log(m) });
-  t3.on('status', (s) => { live = s && s.state !== 'idle' ? s : null; pushStatus(); });
-  t3.on('mode', () => updateTray());
+  t3 = createStatusSource({ log: (m) => console.log(m) });
+  t3.onActivityChange((s) => { live = s && s.state !== 'idle' ? s : null; pushStatus(); });
+  t3.onModeChange(() => updateTray());
   t3.start();
   updateTray();
 

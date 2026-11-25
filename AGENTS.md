@@ -16,7 +16,7 @@ A desktop pet for T3 Code on Windows, forked from [kausthubh-coder/t3-pet](https
 
 - `src/main.js`: Electron main process (overlay window, tray, hotkeys, cursor polling).
 - `src/renderer/`: overlay UI and pet behaviour (`pet.js`).
-- `src/status/`: reads T3 state (polling). All knowledge of T3 internals stays here.
+- `src/status/`: reads T3 state (polling). All knowledge of T3 internals stays here. Import only `src/status/index.js` (`createStatusSource`); the interface (`onActivityChange`, `onRunCompleted`, `onModeChange`) is documented in `status-source.js`.
 - `src/shared/`: sprite drawing and animations.
 - `design/`: design tokens and mockups. `design/tokens.css` is the source of truth for colours, radii, blur and spacing.
 - `docs/`: spec, decisions, data-source notes.

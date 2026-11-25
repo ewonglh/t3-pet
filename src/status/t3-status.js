@@ -6,8 +6,8 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
-const { EventEmitter } = require('node:events');
-const { computeStatus, latestTitle } = require('./queries');
+const { StatusSource } = require('./status-source');
+const { computeStatus, finishedRuns, latestTitle } = require('./queries');
 
 function defaultDbPath() {
   return process.env.T3_STATE_DB || path.join(os.homedir(), '.t3', 'userdata', 'statev2.sqlite');
@@ -24,20 +24,39 @@ function loadNativeSqlite() {
   }
 }
 
-class T3Status extends EventEmitter {
+// StatusSource implementation that polls T3 Code's SQLite state about once a second.
+class PollingStatusSource extends StatusSource {
   constructor({ dbPath = defaultDbPath(), intervalMs = 1000, log = console.log } = {}) {
     super();
     this.dbPath = dbPath;
     this.intervalMs = intervalMs;
     this.log = log;
     this.DatabaseSync = loadNativeSqlite();
-    this.mode = 'starting';
     this.db = null;
     this.child = null;
     this.timer = null;
     this.lastError = '';
-    this.latestTitle = '';
     this.stopped = false;
+    this.lastActivity = undefined; // JSON of the last activity we emitted
+    this.knownRuns = null; // run ids seen on the last poll; null until the first poll
+  }
+
+  // Emit only when the activity changed.
+  publishActivity(status) {
+    const k = JSON.stringify(status);
+    if (k === this.lastActivity) return;
+    this.lastActivity = k;
+    this.emit('activity', status);
+  }
+
+  // Emit each run we have not seen before, oldest first. The first poll only records what is
+  // already there, so old runs are not replayed at start-up.
+  publishRuns(runs) {
+    const first = this.knownRuns === null;
+    const known = this.knownRuns || new Set();
+    this.knownRuns = new Set(runs.map((r) => r.runId));
+    if (first) return;
+    for (const r of runs.filter((x) => !known.has(x.runId)).reverse()) this.emit('run-completed', r);
   }
 
   start() {
@@ -75,7 +94,7 @@ class T3Status extends EventEmitter {
       this.closeDb();
       this.killChild();
       this.setMode('demo');
-      this.emit('status', null);
+      this.publishActivity(null);
       return this.schedule(5000);
     }
     if (this.DatabaseSync) return this.tickNative();
@@ -87,16 +106,18 @@ class T3Status extends EventEmitter {
     try {
       if (!this.db) this.db = new this.DatabaseSync(this.dbPath, { readOnly: true });
       const status = computeStatus(this.db);
+      const runs = finishedRuns(this.db);
       this.latestTitle = latestTitle(this.db) || this.latestTitle;
       this.lastError = '';
       this.setMode('live');
-      this.emit('status', status);
+      this.publishRuns(runs);
+      this.publishActivity(status);
       this.schedule(this.intervalMs);
     } catch (e) {
       this.closeDb();
       this.logErrorOnce(`read failed: ${e.message}`);
       this.setMode('error');
-      this.emit('status', null);
+      this.publishActivity(null);
       this.schedule(3000);
     }
   }
@@ -143,11 +164,12 @@ class T3Status extends EventEmitter {
       this.lastError = '';
       if (msg.latestTitle) this.latestTitle = msg.latestTitle;
       this.setMode('live');
-      this.emit('status', msg.status);
+      this.publishRuns(msg.runs || []);
+      this.publishActivity(msg.status);
     } else {
       this.logErrorOnce(msg.error);
       this.setMode(msg.fatal ? 'demo' : 'error');
-      this.emit('status', null);
+      this.publishActivity(null);
     }
   }
 
@@ -155,7 +177,7 @@ class T3Status extends EventEmitter {
     this.killChild();
     this.logErrorOnce(`${reason}; running in demo mode, retrying in 30 s`);
     this.setMode('demo');
-    this.emit('status', null);
+    this.publishActivity(null);
     this.schedule(30000);
   }
 
@@ -168,4 +190,4 @@ class T3Status extends EventEmitter {
   }
 }
 
-module.exports = { T3Status, defaultDbPath };
+module.exports = { PollingStatusSource, defaultDbPath };
