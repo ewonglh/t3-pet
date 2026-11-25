@@ -2,7 +2,7 @@
 //   node poll-child.js <path-to-statev2.sqlite>
 // Prints one JSON line per second: {"ok":true,"status":{...},"latestTitle":"..."} or {"ok":false,"error":"..."}.
 'use strict';
-const { computeStatus, latestTitle } = require('./queries');
+const { computeStatus, finishedRuns, latestTitle } = require('./queries');
 
 const dbPath = process.argv[2];
 let DatabaseSync;
@@ -18,7 +18,7 @@ function tick() {
   try {
     if (!db) db = new DatabaseSync(dbPath, { readOnly: true });
     const status = computeStatus(db);
-    process.stdout.write(JSON.stringify({ ok: true, status, latestTitle: latestTitle(db) }) + '\n');
+    process.stdout.write(JSON.stringify({ ok: true, status, runs: finishedRuns(db), latestTitle: latestTitle(db) }) + '\n');
   } catch (e) {
     try { db && db.close(); } catch {}
     db = null;
