@@ -60,13 +60,13 @@ function computeStatus(db, now = Date.now()) {
 
   if (pending.length) {
     const p = pending[0];
-    return { state: 'waiting', title: p.title || '', count: pending.length, key: `waiting:${p.thread_id}:${p.created_at}` };
+    return { state: 'waiting', title: p.title || '', count: pending.length, key: `waiting:${p.thread_id}:${p.created_at}`, threadId: p.thread_id || null };
   }
-  if (failed) return { state: 'error', title: failed.title || '', count: 1, key: `error:${failed.run_id}` };
-  if (completed) return { state: 'done', title: completed.title || '', count: 1, key: `done:${completed.run_id}` };
+  if (failed) return { state: 'error', title: failed.title || '', count: 1, key: `error:${failed.run_id}`, threadId: failed.thread_id || null };
+  if (completed) return { state: 'done', title: completed.title || '', count: 1, key: `done:${completed.run_id}`, threadId: completed.thread_id || null };
   if (running.length) {
     const r = running[0];
-    return { state: 'working', title: r.title || '', count: running.length, key: `working:${r.thread_id}` };
+    return { state: 'working', title: r.title || '', count: running.length, key: `working:${r.thread_id}`, threadId: r.thread_id || null };
   }
   return { state: 'idle', title: '', count: 0, key: 'idle' };
 }

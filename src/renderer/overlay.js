@@ -13,6 +13,7 @@
       api.setClickable(on);
     },
     setAsleep(asleep) { api.setAsleep(asleep); },
+    openThread() { api.openThread(); },
   });
 
   api.on('display', (d) => pet.setBounds(d.width, d.height, d.reason));

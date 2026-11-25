@@ -82,7 +82,7 @@ When a milestone closes, tag the release commit `vX.Y.Z` and create a GitHub rel
 
 ## Checking your work
 
-There is no automated test suite yet. Until there is, run the app on Windows 11, exercise the change (use the force-state hotkeys), and say in the pull request what you tried and what you did not. If you add logic that can be tested without Electron (queries, link building, mapping tables), add a small test with `node --test`.
+Run `npm test` (Node's built-in test runner, tests in `test/`). Logic that can run without Electron (queries, link building, mapping tables) should have a test there; the query tests use a throwaway in-memory database, never real T3 data. Then run the app on Windows 11, exercise the change (use the force-state hotkeys), and say in the pull request what you tried and what you did not.
 
 ## Writing
 

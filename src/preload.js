@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('petAPI', {
   },
   setClickable: (on) => ipcRenderer.send('clickable', !!on),
   setAsleep: (asleep) => ipcRenderer.send('asleep', !!asleep),
+  openThread: () => ipcRenderer.send('open-thread'),
   ready: () => ipcRenderer.send('ready'),
 });
