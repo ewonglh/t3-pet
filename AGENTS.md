@@ -11,13 +11,15 @@ A desktop pet for T3 Code on Windows, forked from [kausthubh-coder/t3-pet](https
 - Node 24 or later (uses the built-in `node:sqlite`).
 - `npm install`, then `npm start`. There is no build step. Keep it that way unless an issue says otherwise.
 - Force states without a live T3: tray menu State submenu. The global hotkeys `Control+Alt+0` to `5` (live, idle, working, waiting, done, error) are off by default because they clash with other tools; set `T3PET_TEST_KEYS=1` to turn them on. `preview.html` previews animations.
+- Try a Petdex/Codex pet: install one with the Petdex CLI, then set `T3PET_PET` to its folder name (looked up in `~/.petdex/pets` and `~/.codex/pets`) or a full folder path, for example `$env:T3PET_PET='boba'; npm start`. Unset, or if the pet is invalid, the built-in mascot is used. A tray menu to choose a pet is issue #8.
 
 ## Layout
 
 - `src/main.js`: Electron main process (overlay window, tray, hotkeys, cursor polling).
 - `src/renderer/`: overlay UI and pet behaviour (`pet.js`).
 - `src/status/`: reads T3 state (polling). All knowledge of T3 internals stays here. Import only `src/status/index.js` (`createStatusSource`); the interface (`onActivityChange`, `onRunCompleted`, `onModeChange`) is documented in `status-source.js`.
-- `src/shared/`: sprite drawing and animations.
+- `src/shared/`: built-in sprite drawing and animations; Petdex sheet layout (`sheet-grid.js`) and which row an animation plays (`pet-rows.js`).
+- `src/main/pets.js`: loads and validates a pet folder. `src/renderer/spritesheet.js`: draws its frames.
 - `design/`: design tokens and mockups. `design/tokens.css` is the source of truth for colours, radii, blur and spacing.
 - `docs/`: spec, decisions, data-source notes.
 

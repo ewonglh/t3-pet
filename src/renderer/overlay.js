@@ -20,6 +20,13 @@
   api.on('cursor', (c) => pet.pointer(c.x, c.y));
   api.on('status', (s) => pet.setStatus(s));
   api.on('paused', (p) => pet.setPaused(p));
+  // A Petdex pet from the main process; anything wrong with it leaves the built-in mascot.
+  api.on('pet', (info) => {
+    window.T3Sheet.load(info).then((sheet) => {
+      if (sheet) pet.setSheet(sheet);
+      else console.log('[t3-pet] pet sheet could not be used; keeping the built-in mascot');
+    });
+  });
   api.on('command', (cmd) => {
     if (cmd === 'sleep') pet.sleepNow();
     else if (cmd === 'pet') pet.pet();
