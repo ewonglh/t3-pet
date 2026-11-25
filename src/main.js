@@ -8,6 +8,7 @@ const { createStatusSource } = require('./status');
 const { readEnvironmentId } = require('./status/environment');
 const { trayImage } = require('./main/icon');
 const { buildThreadLink } = require('./main/thread-link');
+const { resolvePet } = require('./main/pets');
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -202,6 +203,23 @@ function openThread() {
   shell.openExternal(link).catch((err) => console.log(`[t3-pet] could not open the thread link: ${err.message}`));
 }
 
+// ---- pet ----------------------------------------------------------------------------------
+// A Petdex/Codex pet chosen with T3PET_PET (a pet id from ~/.petdex/pets or ~/.codex/pets, or a
+// folder path). Not set, or invalid: the renderer keeps the built-in mascot. Choosing from the
+// tray menu comes with issue #8.
+function loadChosenPet() {
+  const spec = process.env.T3PET_PET;
+  if (!spec) return null;
+  const pet = resolvePet(spec);
+  if (!pet.ok) {
+    console.log(`[t3-pet] pet "${spec}" not used: ${pet.reason}`);
+    return null;
+  }
+  console.log(`[t3-pet] pet: ${pet.name} (${pet.rows} rows)`);
+  return { name: pet.name, rows: pet.rows, dataUrl: `data:${pet.mime};base64,${pet.bytes.toString('base64')}` };
+}
+let chosenPet = null;
+
 // ---- ipc ----------------------------------------------------------------------------------
 ipcMain.on('open-thread', (e) => {
   if (win && e.sender === win.webContents) openThread();
@@ -220,6 +238,7 @@ ipcMain.on('ready', (e) => {
   lastCursor = { x: NaN, y: NaN };
   sendDisplay('init');
   send('paused', paused);
+  if (chosenPet) send('pet', chosenPet);
   pushStatus();
 });
 
@@ -230,6 +249,7 @@ app.whenReady().then(() => {
   if (process.platform === 'win32') app.setAppUserModelId('dev.t3.pet');
   if (process.platform === 'darwin' && app.dock) app.dock.hide();
 
+  chosenPet = loadChosenPet();
   createWindow();
   tray = new Tray(trayImage());
   tray.on('click', () => tray.popUpContextMenu());

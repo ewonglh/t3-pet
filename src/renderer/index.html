@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
 <title>T3 Pet</title>
 <style>
   html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: transparent; user-select: none; }
@@ -15,6 +15,9 @@
 <div id="root"></div>
 <script src="../shared/sprite.js"></script>
 <script src="../shared/anims.js"></script>
+<script src="../shared/sheet-grid.js"></script>
+<script src="../shared/pet-rows.js"></script>
+<script src="spritesheet.js"></script>
 <script src="pet.js"></script>
 <script src="overlay.js"></script>
 </body>
