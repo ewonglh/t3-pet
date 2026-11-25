@@ -6,6 +6,8 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { rowsForSize } = require('../shared/sheet-grid');
+const { ROW } = require('../shared/pet-rows');
+const { rowFps } = require('../shared/sheet-timing');
 
 const MAX_JSON_BYTES = 64 * 1024;
 const MAX_SHEET_BYTES = 16 * 1024 * 1024;
@@ -69,7 +71,8 @@ function loadPetFolder(dir) {
 
   const text = (v, fallback) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, 80) : fallback);
   const id = text(manifest.id, path.basename(dir));
-  return { ok: true, id, name: text(manifest.displayName, id), rows, mime, bytes };
+  const { fps, warnings } = rowFps(manifest.fps, Object.keys(ROW), rows);
+  return { ok: true, id, name: text(manifest.displayName, id), rows, mime, bytes, fps, warnings };
 }
 
 // spec is an absolute folder path, or a pet id / folder name to look for in the install folders.
