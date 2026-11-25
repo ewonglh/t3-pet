@@ -15,6 +15,7 @@ if (!app.requestSingleInstanceLock()) {
   process.exit(0);
 }
 
+const TEST_KEYS = process.env.T3PET_TEST_KEYS === '1';
 const FORCED_FLASH_MS = 6000; // forced done/error behave like the real thing, then go idle
 const STATES = ['idle', 'working', 'waiting', 'done', 'error'];
 const LABELS = { idle: 'Idle', working: 'Working', waiting: 'Waiting on you', done: 'Done', error: 'Error' };
@@ -148,14 +149,14 @@ function updateTray() {
   if (!tray) return;
   const s = effectiveStatus();
   const mode = t3 ? t3.mode : 'demo';
-  const source = forced ? 'Forced by hotkey (Ctrl+Alt+0 for live)'
+  const source = forced ? (TEST_KEYS ? 'Forced state (Ctrl+Alt+0 for live)' : 'Forced state (choose Live T3 status to undo)')
     : mode === 'live' ? 'Live: reading T3 Code state'
     : mode === 'error' ? 'T3 database unreadable, retrying'
     : 'Demo mode: no T3 database found';
   const head = `T3: ${LABELS[s.state] || s.state}${s.title ? ` — ${s.title}` : ''}`;
   tray.setToolTip(head.length > 120 ? head.slice(0, 117) + '…' : head);
   const radio = (label, state, key) => ({
-    label: `${label}\tCtrl+Alt+${key}`, type: 'radio',
+    label: TEST_KEYS ? `${label}\tCtrl+Alt+${key}` : label, type: 'radio',
     checked: state === null ? !forced : !!forced && forced.state === state,
     click: () => force(state),
   });
@@ -179,7 +180,11 @@ function updateTray() {
   ]));
 }
 
+// Testing aid, off by default: global shortcuts clash with other tools. Opt in with
+// T3PET_TEST_KEYS=1. The tray State submenu forces states without them. Rebinding and a toggle
+// arrive with the settings window (#17, "Test commands" section of Keyboard).
 function registerHotkeys() {
+  if (!TEST_KEYS) return;
   const keys = { 0: null, 1: 'idle', 2: 'working', 3: 'waiting', 4: 'done', 5: 'error' };
   for (const [k, state] of Object.entries(keys)) {
     const ok = globalShortcut.register(`Control+Alt+${k}`, () => force(state));

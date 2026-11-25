@@ -299,6 +299,21 @@
           </div>
           <p class="conflict" role="alert"></p>
         </div>
+
+        <h3>Test commands</h3>
+        <p class="row__hint" style="margin:0 0 var(--space-2)">For trying the pet without a live T3 task. Global shortcuts, so they can clash with other apps. Off by default.</p>
+        <div class="group" id="test-keys" data-off="true">
+          <div class="row">
+            <div class="row__text"><div class="row__label" id="l-testkeys">Enable test shortcuts</div></div>
+            <div class="row__ctl"><button class="switch" role="switch" aria-checked="false" aria-labelledby="l-testkeys" type="button" id="testkeys"></button></div>
+          </div>
+          <div class="row"><div class="row__text"><div class="row__label">Live T3 status</div></div><div class="row__ctl"><button class="key" type="button" disabled aria-label="Live T3 status shortcut, Control Alt 0. Press to change.">Ctrl+Alt+0</button></div></div>
+          <div class="row"><div class="row__text"><div class="row__label">Force idle</div></div><div class="row__ctl"><button class="key" type="button" disabled aria-label="Force idle shortcut, Control Alt 1. Press to change.">Ctrl+Alt+1</button></div></div>
+          <div class="row"><div class="row__text"><div class="row__label">Force working</div></div><div class="row__ctl"><button class="key" type="button" disabled aria-label="Force working shortcut, Control Alt 2. Press to change.">Ctrl+Alt+2</button></div></div>
+          <div class="row"><div class="row__text"><div class="row__label">Force waiting on you</div></div><div class="row__ctl"><button class="key" type="button" disabled aria-label="Force waiting shortcut, Control Alt 3. Press to change.">Ctrl+Alt+3</button></div></div>
+          <div class="row"><div class="row__text"><div class="row__label">Force done</div></div><div class="row__ctl"><button class="key" type="button" disabled aria-label="Force done shortcut, Control Alt 4. Press to change.">Ctrl+Alt+4</button></div></div>
+          <div class="row"><div class="row__text"><div class="row__label">Force error</div></div><div class="row__ctl"><button class="key" type="button" disabled aria-label="Force error shortcut, Control Alt 5. Press to change.">Ctrl+Alt+5</button></div></div>
+        </div>
       </section>
 
       <section class="pane" id="p-appearance" role="tabpanel" aria-labelledby="t-appearance" hidden>
@@ -460,6 +475,10 @@
 
   document.querySelectorAll('.switch').forEach(function (s) {
     s.addEventListener('click', function () { s.setAttribute('aria-checked', String(s.getAttribute('aria-checked') !== 'true')); });
+  });
+  document.getElementById('testkeys').addEventListener('click', function () {
+    var on = this.getAttribute('aria-checked') === 'true';
+    document.querySelectorAll('#test-keys .key').forEach(function (k) { k.disabled = !on; });
   });
   document.getElementById('track').addEventListener('click', function () {
     var on = this.getAttribute('aria-checked') === 'true';

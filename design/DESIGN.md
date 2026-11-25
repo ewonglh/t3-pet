@@ -88,3 +88,8 @@ Small tweaks only; structure, glass look and T3 tokens are unchanged.
 - Settings search highlighting uses one combined pattern over the raw text, with each piece escaped, so queries such as "show a", "pet a" and "ar" cannot break the markup.
 - The check-interval and theme controls are radio groups with a single Tab stop and arrow-key selection, sharing one helper with the pet picker.
 - Pet tiles use `span`s inside their buttons (valid HTML). Leftover unused icon, comments and a no-op loop removed.
+
+## Keyboard: test commands
+
+The bottom of the Keyboard section has a **Test commands** group: a switch (off by default) and one rebindable shortcut per command that forces a status (live, idle, working, waiting, done, error). The shortcut buttons are disabled while the switch is off. These are global shortcuts meant for trying the pet without a live T3 task, so they are opt-in and kept apart from the card keys. See issue #17.
+
