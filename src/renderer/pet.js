@@ -4,7 +4,6 @@
 (function () {
   'use strict';
   const S = window.T3Sprite, A = window.T3Anims, G = window.T3SheetGrid, P = window.T3PetRows;
-  const SHEET_FPS = 8; // playback speed of spritesheet frames
 
   // Art canvas: the pet's feet sit on row AY, body centred on column AX.
   const W = 64, H = 80, AX = 31, AY = 76;
@@ -260,11 +259,20 @@
       }
     }
 
+    // Seconds a one-shot animation lasts. The built-in mascot has fixed times. A sheet pet plays
+    // the row it maps to once, so the time is that row's own length (frames / fps), which differs
+    // per pet. hurt, dizzy and ouch all map to one row, so dizzy adds nothing.
+    dur(name) {
+      if (!this.sheet) return name === 'done' ? 1.2 : A.DURATION[name];
+      if (name === 'dizzy') return 0;
+      return this.sheet.seconds(P.rowFor(name));
+    }
+
     busyAnim() {
       const t = this.timers;
-      if (t.land < A.DURATION.land || t.wake < A.DURATION.wake || t.petted < A.DURATION.petted) return true;
-      if (t.hurt < A.DURATION.hurt + A.DURATION.dizzy || t.ouch < A.DURATION.ouch) return true;
-      if (this.status.state === 'done' && (performance.now() - this.status.since) / 1000 < 1.2) return true;
+      if (t.land < this.dur('land') || t.wake < this.dur('wake') || t.petted < this.dur('petted')) return true;
+      if (t.hurt < this.dur('hurt') + this.dur('dizzy') || t.ouch < this.dur('ouch')) return true;
+      if (this.status.state === 'done' && (performance.now() - this.status.since) / 1000 < this.dur('done')) return true;
       return false;
     }
 
@@ -305,7 +313,7 @@
           this.alt = 0; this.vy = 0; this.vx *= 0.25;
           this.mode = 'ground';
           if (impact > CFG.hurtFloorSpeed * k && T.hurt > 0.5 && !this.softLanding) this.bonk(0);
-          else if (T.hurt > A.DURATION.hurt) T.land = 0;
+          else if (T.hurt > this.dur('hurt')) T.land = 0;
           this.softLanding = false;
         }
         return;
@@ -358,13 +366,14 @@
       } : { x: 0, y: 0 };
       const ctx = { look, facing: this.facing, phase: this.phase, seed: this.seed };
       if (this.mode === 'drag') return ['picked', T.drag, Object.assign(ctx, { swing: this.drag ? this.drag.swing : 0 })];
-      if (T.hurt < A.DURATION.hurt) return ['hurt', T.hurt, Object.assign(ctx, { side: this.hurtSide })];
+      const hurtFor = this.dur('hurt');
+      if (T.hurt < hurtFor) return ['hurt', T.hurt, Object.assign(ctx, { side: this.hurtSide })];
       if (this.mode === 'fall') return ['fall', T.fall, ctx];
-      if (T.hurt < A.DURATION.hurt + A.DURATION.dizzy) return ['dizzy', T.hurt - A.DURATION.hurt, ctx];
-      if (T.ouch < A.DURATION.ouch) return ['ouch', T.ouch, ctx];
-      if (T.land < A.DURATION.land) return ['land', T.land, ctx];
-      if (T.wake < A.DURATION.wake) return ['wake', T.wake, ctx];
-      if (T.petted < A.DURATION.petted) return ['petted', T.petted, ctx];
+      if (T.hurt < hurtFor + this.dur('dizzy')) return ['dizzy', T.hurt - hurtFor, ctx];
+      if (T.ouch < this.dur('ouch')) return ['ouch', T.ouch, ctx];
+      if (T.land < this.dur('land')) return ['land', T.land, ctx];
+      if (T.wake < this.dur('wake')) return ['wake', T.wake, ctx];
+      if (T.petted < this.dur('petted')) return ['petted', T.petted, ctx];
       if (this.asleep) return ['sleep', (now - this.sleepSince) / 1000, ctx];
       if (Math.abs(this.vx) > 12 && this.facing) {
         if (st === 'error') Object.assign(ctx, { brows: 'sad', mouth: 'frown' });
@@ -395,7 +404,7 @@
       if (this.sheet) {
         const sh = this.sheet, s = u / 3, box = sh.box;
         const row = sh.usableRow(P.rowFor(name, ctx));
-        const col = Math.floor(t * SHEET_FPS) % sh.frames(row);
+        const col = Math.floor(t * sh.fps(row)) % sh.frames(row);
         sh.draw(this.sctx, row, col);
         // feet (lowest painted pixel of the idle row) on the ground, body centred on x
         left = this.snap(this.x - (G.FRAME_W / 2) * s);
@@ -403,7 +412,7 @@
         this.stage.style.width = G.FRAME_W * s + 'px';
         this.stage.style.height = G.FRAME_H * s + 'px';
         info = { top: (box.top * s) / u };
-        f.fps = Math.max(f.fps || 0, SHEET_FPS);
+        f.fps = Math.max(f.fps || 0, sh.fps(row));
       } else {
         const buf = this.buf;
         buf.clear();

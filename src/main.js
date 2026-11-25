@@ -221,7 +221,8 @@ function loadChosenPet() {
     return null;
   }
   console.log(`[t3-pet] pet: ${pet.name} (${pet.rows} rows)`);
-  return { name: pet.name, rows: pet.rows, dataUrl: `data:${pet.mime};base64,${pet.bytes.toString('base64')}` };
+  for (const w of pet.warnings) console.log(`[t3-pet] pet.json: ${w}`);
+  return { name: pet.name, rows: pet.rows, fps: pet.fps, dataUrl: `data:${pet.mime};base64,${pet.bytes.toString('base64')}` };
 }
 let chosenPet = null;
 
