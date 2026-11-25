@@ -3,7 +3,8 @@
 // Coordinates are CSS px relative to the container; the host feeds it cursor positions.
 (function () {
   'use strict';
-  const S = window.T3Sprite, A = window.T3Anims;
+  const S = window.T3Sprite, A = window.T3Anims, G = window.T3SheetGrid, P = window.T3PetRows;
+  const SHEET_FPS = 8; // playback speed of spritesheet frames
 
   // Art canvas: the pet's feet sit on row AY, body centred on column AX.
   const W = 64, H = 80, AX = 31, AY = 76;
@@ -73,6 +74,7 @@
       this.last = performance.now();
       this.raf = 0; this.timer = 0;
       this.frame = null;
+      this.sheet = null;
       this.bubbleKey = '';
       this.kick();
     }
@@ -222,9 +224,26 @@
       b.animate([{ transform: 'scale(0.4)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' });
     }
 
+    // Use a Petdex Sheet (see spritesheet.js) in place of the built-in mascot, or null to go back.
+    setSheet(sheet) {
+      this.sheet = sheet || null;
+      const w = this.sheet ? G.FRAME_W : W, h = this.sheet ? G.FRAME_H : H;
+      this.stage.width = w; this.stage.height = h; // resizing also clears the canvas
+      // HD art scales smoothly; the built-in pixel art stays crisp
+      this.stage.style.imageRendering = this.sheet ? 'auto' : 'pixelated';
+      this.kick();
+    }
+
     petBox() {
       const u = this.u();
       const feetY = this.groundY() - this.alt - (this.frame ? this.frame.offsetY * u : 0);
+      if (this.sheet) {
+        const s = u / 3, b = this.sheet.box;
+        return {
+          l: this.x + (b.left - G.FRAME_W / 2) * s, r: this.x + (b.right + 1 - G.FRAME_W / 2) * s,
+          t: feetY - (b.bottom - b.top + 1) * s, b: feetY + u,
+        };
+      }
       return { l: this.x - 17 * u, r: this.x + 17 * u, t: feetY - 37 * u, b: feetY + u };
     }
 
@@ -369,20 +388,34 @@
       this.frame = f;
       const sit = !!f.pose.sit;
 
-      // pet
-      const buf = this.buf;
-      buf.clear();
-      const info = S.drawPet(buf, f.pose, AX, AY);
-      info.ground = AY;
-      S.drawFx(buf, f.fx, info);
-      buf.toCanvas(this.sctx);
-
+      // pet: a Petdex spritesheet frame if one is loaded, else the built-in mascot
       const ground = this.groundY();
       const lift = f.offsetY * u;
-      const left = this.snap(this.x - (AX + 0.5) * u);
-      const top = this.snap(ground - this.alt - lift - AY * u);
-      this.stage.style.width = W * u + 'px';
-      this.stage.style.height = H * u + 'px';
+      let info, left, top;
+      if (this.sheet) {
+        const sh = this.sheet, s = u / 3, box = sh.box;
+        const row = sh.usableRow(P.rowFor(name, ctx));
+        const col = Math.floor(t * SHEET_FPS) % sh.frames(row);
+        sh.draw(this.sctx, row, col);
+        // feet (lowest painted pixel of the idle row) on the ground, body centred on x
+        left = this.snap(this.x - (G.FRAME_W / 2) * s);
+        top = this.snap(ground - this.alt - lift - (box.bottom + 1) * s);
+        this.stage.style.width = G.FRAME_W * s + 'px';
+        this.stage.style.height = G.FRAME_H * s + 'px';
+        info = { top: (box.top * s) / u };
+        f.fps = Math.max(f.fps || 0, SHEET_FPS);
+      } else {
+        const buf = this.buf;
+        buf.clear();
+        info = S.drawPet(buf, f.pose, AX, AY);
+        info.ground = AY;
+        S.drawFx(buf, f.fx, info);
+        buf.toCanvas(this.sctx);
+        left = this.snap(this.x - (AX + 0.5) * u);
+        top = this.snap(ground - this.alt - lift - AY * u);
+        this.stage.style.width = W * u + 'px';
+        this.stage.style.height = H * u + 'px';
+      }
       this.stage.style.transform = `translate3d(${left}px,${top}px,0)`;
 
       // shadow stays on the ground

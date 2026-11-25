@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-const CHANNELS = ['display', 'cursor', 'status', 'paused', 'command'];
+const CHANNELS = ['display', 'cursor', 'status', 'paused', 'command', 'pet'];
 
 contextBridge.exposeInMainWorld('petAPI', {
   on(channel, cb) {
