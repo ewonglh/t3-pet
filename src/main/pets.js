@@ -38,7 +38,10 @@ function readImageSize(buf) {
 
 function fail(reason) { return { ok: false, reason }; }
 
-function loadPetFolder(dir) {
+// A pet's key: its folder name, as chosen in the menu or in T3PET_PET.
+const PET_KEY = /^[\w.-]+$/;
+
+function loadPetFolder(dir, { headerOnly = false } = {}) {
   let manifest;
   try {
     const jsonPath = path.join(dir, 'pet.json');
@@ -60,7 +63,13 @@ function loadPetFolder(dir) {
   let bytes;
   try {
     if (fs.statSync(sheetPath).size > MAX_SHEET_BYTES) return fail('spritesheet is too large');
-    bytes = fs.readFileSync(sheetPath);
+    if (headerOnly) { // listing pets: the size is in the first bytes, so skip the rest of the file
+      const fd = fs.openSync(sheetPath, 'r');
+      try {
+        bytes = Buffer.alloc(64);
+        bytes = bytes.subarray(0, fs.readSync(fd, bytes, 0, 64, 0));
+      } finally { fs.closeSync(fd); }
+    } else bytes = fs.readFileSync(sheetPath);
   } catch (e) {
     return fail(`cannot read spritesheet (${e.code || e.message})`);
   }
@@ -72,14 +81,37 @@ function loadPetFolder(dir) {
   const text = (v, fallback) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, 80) : fallback);
   const id = text(manifest.id, path.basename(dir));
   const { fps, warnings } = rowFps(manifest.fps, Object.keys(ROW), rows);
-  return { ok: true, id, name: text(manifest.displayName, id), rows, mime, bytes, fps, warnings };
+  return { ok: true, id, name: text(manifest.displayName, id), rows, mime, bytes: headerOnly ? null : bytes, fps, warnings };
+}
+
+const MAX_LISTED = 100;
+
+// Pets installed in the Petdex and Codex folders, for a menu. Reads only pet.json and the first
+// bytes of each sheet. key is the folder name (what resolvePet looks up); a pet in an earlier root
+// hides one with the same key in a later root, as resolvePet would. Broken folders are skipped.
+function listPets(roots = petRoots()) {
+  const out = [];
+  const seen = new Set();
+  for (const root of roots) {
+    let names;
+    try { names = fs.readdirSync(root, { withFileTypes: true }); } catch { continue; }
+    for (const e of names) {
+      if (!e.isDirectory() || !PET_KEY.test(e.name) || seen.has(e.name)) continue;
+      const pet = loadPetFolder(path.join(root, e.name), { headerOnly: true });
+      if (!pet.ok) continue;
+      seen.add(e.name);
+      out.push({ key: e.name, name: pet.name, rows: pet.rows });
+      if (out.length >= MAX_LISTED) return out;
+    }
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // spec is an absolute folder path, or a pet id / folder name to look for in the install folders.
 function resolvePet(spec, roots = petRoots()) {
   if (!spec) return fail('no pet chosen');
   if (path.isAbsolute(spec)) return loadPetFolder(spec);
-  if (!/^[\w.-]+$/.test(spec)) return fail('pet id may only contain letters, digits, dot, dash and underscore');
+  if (!PET_KEY.test(spec)) return fail('pet id may only contain letters, digits, dot, dash and underscore');
   for (const root of roots) {
     const dir = path.join(root, spec);
     if (fs.existsSync(path.join(dir, 'pet.json'))) return loadPetFolder(dir);
@@ -87,4 +119,4 @@ function resolvePet(spec, roots = petRoots()) {
   return fail(`no pet "${spec}" in ${roots.join(' or ')}`);
 }
 
-module.exports = { petRoots, readImageSize, loadPetFolder, resolvePet };
+module.exports = { PET_KEY, petRoots, readImageSize, loadPetFolder, listPets, resolvePet };
