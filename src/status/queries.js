@@ -21,14 +21,34 @@ const SQL = {
     LEFT JOIN orchestration_v2_projection_threads t ON t.thread_id = r.thread_id
     WHERE r.status IN ('completed', 'failed') AND r.completed_at IS NOT NULL
     ORDER BY r.completed_at DESC LIMIT 5`,
+  // Cards: finished runs on threads that still exist and are not archived or deleted.
+  // completed_at is an ISO string in UTC, so comparing it as text sorts correctly.
+  cards: `SELECT r.run_id, r.thread_id, r.status, r.completed_at, t.title FROM orchestration_v2_projection_runs r
+    JOIN orchestration_v2_projection_threads t ON t.thread_id = r.thread_id
+    WHERE r.status IN ('completed', 'failed') AND r.completed_at >= ?
+      AND t.archived_at IS NULL AND t.deleted_at IS NULL
+    ORDER BY r.completed_at DESC LIMIT ?`,
+  // A run has many assistant messages (narration between tool calls); the last finished one is the answer.
+  answer: `SELECT json_extract(payload_json, '$.text') AS text FROM orchestration_v2_projection_messages
+    WHERE run_id = ? AND role = 'assistant' AND streaming = 0
+      AND json_extract(payload_json, '$.text') IS NOT NULL
+    ORDER BY created_at DESC LIMIT 1`,
 };
+
+const LOOKBACK_MS = 24 * 60 * 60 * 1000; // how far back completed runs are reported at start-up
+const MAX_CARD_RUNS = 20;
+const SNIPPET_MAX = 160;
 
 const cache = new WeakMap();
 function stmts(db) {
   let s = cache.get(db);
   if (!s) {
+    // Prepared on first use, so a query only needs the tables it reads.
     s = {};
-    for (const [k, sql] of Object.entries(SQL)) s[k] = db.prepare(sql);
+    for (const [k, sql] of Object.entries(SQL)) {
+      let stmt = null;
+      Object.defineProperty(s, k, { get: () => stmt || (stmt = db.prepare(sql)) });
+    }
     cache.set(db, s);
   }
   return s;
@@ -71,14 +91,42 @@ function computeStatus(db, now = Date.now()) {
   return { state: 'idle', title: '', count: 0, key: 'idle' };
 }
 
-// The most recently finished runs (up to 5), newest first, in the shape onRunCompleted emits.
-function finishedRuns(db) {
-  return stmts(db).finished.all().map((r) => ({
+// One line of plain text from a message: markdown marks and line breaks removed, cut at max.
+function makeSnippet(text, max = SNIPPET_MAX) {
+  if (typeof text !== 'string') return '';
+  let s = text
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/^\s{0,3}(#{1,6}|[-*+>]|\d+[.)])\s+/gm, '')
+    .replace(/[*_`~]+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (s.length > max) s = s.slice(0, max - 1).trimEnd() + '…';
+  return s;
+}
+
+// A finished run's answer never changes, so look it up once.
+const snippets = new Map();
+function answerSnippet(db, runId) {
+  if (snippets.has(runId)) return snippets.get(runId);
+  const row = stmts(db).answer.get(runId);
+  const snippet = row ? makeSnippet(row.text) : '';
+  if (snippets.size >= 200) snippets.delete(snippets.keys().next().value);
+  snippets.set(runId, snippet);
+  return snippet;
+}
+
+// Finished runs for cards, newest first, in the shape onRunCompleted emits. Only runs whose
+// thread is live (not archived or deleted) and that finished within the look-back window.
+function finishedRuns(db, now = Date.now()) {
+  const since = new Date(now - LOOKBACK_MS).toISOString();
+  return stmts(db).cards.all(since, MAX_CARD_RUNS).map((r) => ({
     runId: r.run_id,
-    threadId: r.thread_id || null,
+    threadId: r.thread_id,
     title: r.title || '',
-    outcome: r.status === 'failed' ? 'failed' : 'completed',
+    status: r.status === 'failed' ? 'failed' : 'completed',
     completedAt: parseTime(r.completed_at),
+    snippet: answerSnippet(db, r.run_id),
   }));
 }
 
@@ -94,4 +142,4 @@ function latestTitle(db) {
   }
 }
 
-module.exports = { computeStatus, finishedRuns, latestTitle, parseTime, RECENT_MS };
+module.exports = { computeStatus, finishedRuns, makeSnippet, latestTitle, LOOKBACK_MS, parseTime, RECENT_MS };
