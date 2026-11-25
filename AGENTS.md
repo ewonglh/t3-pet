@@ -10,7 +10,7 @@ A desktop pet for T3 Code on Windows, forked from [kausthubh-coder/t3-pet](https
 
 - Node 24 or later (uses the built-in `node:sqlite`).
 - `npm install`, then `npm start`. There is no build step. Keep it that way unless an issue says otherwise.
-- Force states without a live T3: tray menu State submenu, or hotkeys `Control+Alt+0` to `5` (live, idle, working, waiting, done, error). `preview.html` previews animations.
+- Force states without a live T3: tray menu State submenu. The global hotkeys `Control+Alt+0` to `5` (live, idle, working, waiting, done, error) are off by default because they clash with other tools; set `T3PET_TEST_KEYS=1` to turn them on. `preview.html` previews animations.
 
 ## Layout
 
@@ -82,7 +82,7 @@ When a milestone closes, tag the release commit `vX.Y.Z` and create a GitHub rel
 
 ## Checking your work
 
-Run `npm test` (Node's built-in test runner, tests in `test/`). Logic that can run without Electron (queries, link building, mapping tables) should have a test there; the query tests use a throwaway in-memory database, never real T3 data. Then run the app on Windows 11, exercise the change (use the force-state hotkeys), and say in the pull request what you tried and what you did not.
+Run `npm test` (Node's built-in test runner, tests in `test/`). Logic that can run without Electron (queries, link building, mapping tables) should have a test there; the query tests use a throwaway in-memory database, never real T3 data. Then run the app on Windows 11, exercise the change (use the tray State submenu, or the test hotkeys), and say in the pull request what you tried and what you did not.
 
 ## Writing
 
