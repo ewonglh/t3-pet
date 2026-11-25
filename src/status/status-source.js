@@ -10,9 +10,11 @@
 //     count, key, threadId }. Called when it changes, not on every poll. null means there is no
 //     data (T3 not installed, or its database unreadable); see onModeChange.
 //
-//   onRunCompleted(handler)    handler({ runId, threadId, title, outcome, completedAt })
-//     Called once for each run that finishes after the source started. outcome is 'completed'
-//     or 'failed'. Runs that finished before start() are not replayed.
+//   onRunCompleted(handler)    handler({ runId, threadId, title, status, completedAt, snippet })
+//     Called once per finished run, oldest first. status is 'completed' or 'failed'; completedAt
+//     is epoch milliseconds; snippet is one plain-text line of the run's last answer ('' if none).
+//     At start-up it also reports runs finished in the last 24 hours (while the pet was closed).
+//     Runs on archived or deleted threads are skipped.
 //
 //   onModeChange(handler)      handler('starting' | 'live' | 'demo' | 'error')
 //     live = reading T3 normally, demo = no T3 data found, error = data found but unreadable.

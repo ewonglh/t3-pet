@@ -49,13 +49,11 @@ class PollingStatusSource extends StatusSource {
     this.emit('activity', status);
   }
 
-  // Emit each run we have not seen before, oldest first. The first poll only records what is
-  // already there, so old runs are not replayed at start-up.
+  // Emit each run we have not seen before, oldest first. The first poll reports everything in
+  // the look-back window (see queries.js), so runs finished while the pet was closed appear.
   publishRuns(runs) {
-    const first = this.knownRuns === null;
     const known = this.knownRuns || new Set();
     this.knownRuns = new Set(runs.map((r) => r.runId));
-    if (first) return;
     for (const r of runs.filter((x) => !known.has(x.runId)).reverse()) this.emit('run-completed', r);
   }
 
