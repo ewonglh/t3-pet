@@ -21,7 +21,7 @@ A desktop pet for T3 Code on Windows, forked from [kausthubh-coder/t3-pet](https
 - `src/shared/`: built-in sprite drawing and animations; Petdex sheet layout (`sheet-grid.js`) and which row an animation plays (`pet-rows.js`).
 - `src/main/pets.js`: lists, loads and validates pet folders. `src/main/settings.js`: the remembered pet choice. `src/renderer/spritesheet.js`: draws its frames.
 - `design/`: design tokens and mockups. `design/tokens.css` is the source of truth for colours, radii, blur and spacing.
-- `docs/`: spec, decisions, data-source notes.
+- `docs/`: spec, decisions, data-source notes, animations, pets (where to get them, licensing).
 
 ## Tracker
 
