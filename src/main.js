@@ -8,7 +8,8 @@ const { createStatusSource } = require('./status');
 const { readEnvironmentId } = require('./status/environment');
 const { trayImage } = require('./main/icon');
 const { buildThreadLink } = require('./main/thread-link');
-const { resolvePet } = require('./main/pets');
+const { resolvePet, listPets } = require('./main/pets');
+const { readSettings, writeSettings } = require('./main/settings');
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -168,6 +169,16 @@ function updateTray() {
     { label: 'Pet it', click: () => send('command', 'pet') },
     { label: 'Go to sleep', click: () => send('command', 'sleep') },
     {
+      label: 'Pet',
+      submenu: [
+        { label: 'Built-in mascot', type: 'radio', checked: !chosenPet, click: () => choosePet(null) },
+        { type: 'separator' },
+        ...(installedPets.length
+          ? installedPets.map((p) => ({ label: p.name, type: 'radio', checked: chosenKey === p.key, click: () => choosePet(p.key) }))
+          : [{ label: 'No pets found in ~/.petdex/pets or ~/.codex/pets', enabled: false }]),
+      ],
+    },
+    {
       label: 'State',
       submenu: [
         radio('Live T3 status', null, 0),
@@ -209,11 +220,10 @@ function openThread() {
 }
 
 // ---- pet ----------------------------------------------------------------------------------
-// A Petdex/Codex pet chosen with T3PET_PET (a pet id from ~/.petdex/pets or ~/.codex/pets, or a
-// folder path). Not set, or invalid: the renderer keeps the built-in mascot. Choosing from the
-// tray menu comes with issue #8.
-function loadChosenPet() {
-  const spec = process.env.T3PET_PET;
+// A Petdex/Codex pet: picked in the tray Pet menu (remembered in settings.json), or given with
+// T3PET_PET (a folder name from ~/.petdex/pets or ~/.codex/pets, or a folder path), which wins at
+// start-up. No pet, or an invalid one: the renderer shows the built-in mascot.
+function loadPet(spec) {
   if (!spec) return null;
   const pet = resolvePet(spec);
   if (!pet.ok) {
@@ -225,6 +235,18 @@ function loadChosenPet() {
   return { name: pet.name, rows: pet.rows, fps: pet.fps, dataUrl: `data:${pet.mime};base64,${pet.bytes.toString('base64')}` };
 }
 let chosenPet = null;
+let chosenKey = null; // folder name of the pet in use, or null for the built-in mascot
+let installedPets = [];
+const settingsFile = () => path.join(app.getPath('userData'), 'settings.json');
+
+function choosePet(key) {
+  const info = key ? loadPet(key) : null;
+  chosenPet = info;
+  chosenKey = info ? key : null;
+  if (!writeSettings(settingsFile(), { pet: chosenKey })) console.log('[t3-pet] could not save the pet choice; it lasts until you quit');
+  send('pet', chosenPet);
+  updateTray();
+}
 
 // ---- ipc ----------------------------------------------------------------------------------
 ipcMain.on('open-thread', (e) => {
@@ -255,10 +277,16 @@ app.whenReady().then(() => {
   if (process.platform === 'win32') app.setAppUserModelId('dev.t3.pet');
   if (process.platform === 'darwin' && app.dock) app.dock.hide();
 
-  chosenPet = loadChosenPet();
+  const spec = process.env.T3PET_PET || readSettings(settingsFile()).pet;
+  chosenPet = loadPet(spec);
+  chosenKey = chosenPet && /^[\w.-]+$/.test(spec) ? spec : null; // a folder path is not in the menu
+  installedPets = listPets();
   createWindow();
   tray = new Tray(trayImage());
-  tray.on('click', () => tray.popUpContextMenu());
+  // Rescan for newly installed pets whenever the menu is about to be used.
+  const rescan = () => { installedPets = listPets(); updateTray(); };
+  tray.on('click', () => { rescan(); tray.popUpContextMenu(); });
+  tray.on('right-click', rescan);
   registerHotkeys();
 
   t3 = createStatusSource({ log: (m) => console.log(m) });

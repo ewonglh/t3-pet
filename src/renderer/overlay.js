@@ -20,11 +20,16 @@
   api.on('cursor', (c) => pet.pointer(c.x, c.y));
   api.on('status', (s) => pet.setStatus(s));
   api.on('paused', (p) => pet.setPaused(p));
-  // A Petdex pet from the main process; anything wrong with it leaves the built-in mascot.
+  // A Petdex pet from the main process, or null for the built-in mascot. Anything wrong with a
+  // pet leaves the built-in mascot. Only the latest choice counts if loads finish out of order.
+  let petLoad = 0;
   api.on('pet', (info) => {
+    const mine = ++petLoad;
+    if (!info) { pet.setSheet(null); return; }
     window.T3Sheet.load(info).then((sheet) => {
+      if (mine !== petLoad) return;
       if (sheet) pet.setSheet(sheet);
-      else console.log('[t3-pet] pet sheet could not be used; keeping the built-in mascot');
+      else { console.log('[t3-pet] pet sheet could not be used; using the built-in mascot'); pet.setSheet(null); }
     });
   });
   api.on('command', (cmd) => {
