@@ -1,6 +1,6 @@
 // The pill and card stack that hang off the pet (see src/shared/overlay-shell.js for the states
 // and placement, and design/ for the look). Built with createElement only, never innerHTML.
-// The stack is an empty slot here; the cards fill it.
+// The stack slot holds the cards (cards.js), or a short note when there are none.
 (function () {
   'use strict';
   const L = window.T3OverlayShell;
@@ -33,7 +33,8 @@
     return s;
   };
 
-  // host: { setClickable(on), openApp(), openMenu() }. pet: the PetController.
+  // host: { setClickable(on), openApp(), openMenu(), openCard(id), dismissCard(id) }.
+  // pet: the PetController.
   class Shell {
     constructor(root, pet, host) {
       this.pet = pet;
@@ -61,7 +62,20 @@
       this.badge.hidden = true;
       this.bellBtn.appendChild(this.badge);
       this.gearBtn = button('Settings', 'settings');
-      this.pill.append(this.openBtn, sep(), this.bellBtn, sep(), this.gearBtn);
+      // Card arrows and "n / total": shown in the pill only while the stack is open (shell.css)
+      // and there are two or more cards, so they cost no height of their own.
+      this.nav = document.createElement('span');
+      this.nav.className = 'pill__nav';
+      this.nav.setAttribute('role', 'group');
+      this.nav.setAttribute('aria-label', 'Browse completed threads');
+      this.prevBtn = button('Previous card', 'arrow-up');
+      this.count = document.createElement('span');
+      this.count.className = 'pill__count';
+      this.count.setAttribute('aria-live', 'polite');
+      this.nextBtn = button('Next card', 'arrow-down');
+      this.nav.append(sep(), this.prevBtn, this.count, this.nextBtn);
+      this.nav.hidden = true;
+      this.pill.append(this.openBtn, sep(), this.bellBtn, sep(), this.gearBtn, this.nav);
 
       this.stack = document.createElement('div');
       this.stack.className = 't3-shell__stack';
@@ -69,6 +83,18 @@
       this.empty.className = 't3-shell__empty';
       this.empty.textContent = 'No completed threads yet';
       this.stack.appendChild(this.empty);
+      this.stack.dataset.empty = '';
+      this.cards = new window.T3CardStack(this.stack, {
+        open: (id) => this.host.openCard(id),
+        dismiss: (id) => this.host.dismissCard(id),
+        changed: () => {
+          const empty = this.cards.length === 0;
+          this.empty.hidden = !empty;
+          this.stack.toggleAttribute('data-empty', empty);
+          this.renderNav();
+          this.place();
+        },
+      });
 
       this.el.append(this.pill, this.stack);
       root.appendChild(this.el);
@@ -76,6 +102,15 @@
       this.openBtn.addEventListener('click', () => this.host.openApp());
       this.bellBtn.addEventListener('click', () => this.set('toggle'));
       this.gearBtn.addEventListener('click', () => this.host.openMenu());
+      this.prevBtn.addEventListener('click', () => this.cards.step(-1));
+      this.nextBtn.addEventListener('click', () => this.cards.step(1));
+      // Scrolling anywhere over the open shell steps through the cards; down goes to older ones.
+      const wheel = window.T3CardView.wheelStepper();
+      this.el.addEventListener('wheel', (e) => {
+        if (this.state !== 'expanded' || this.cards.length < 2) return;
+        const d = wheel(e.deltaY, e.deltaMode, e.timeStamp);
+        if (d) this.cards.step(d);
+      }, { passive: true });
     }
 
     // ---- inputs ------------------------------------------------------------------------
@@ -88,6 +123,12 @@
     }
 
     hide() { this.set('hide'); }
+
+    // list: cards from the main process, newest first. The badge counts the unread ones.
+    setCards(list) {
+      this.cards.set(list);
+      this.setUnread(list.filter((c) => !c.read).length);
+    }
 
     setUnread(n) {
       this.unread = Math.max(0, n | 0);
@@ -140,6 +181,17 @@
       this.bellBtn.querySelector('use').setAttribute('href', `#i-${id}`);
     }
 
+    renderNav() {
+      const n = this.cards.length;
+      const cur = this.cards.cur;
+      const front = this.cards.front;
+      this.nav.hidden = n < 2;
+      this.count.textContent = `${cur + 1} / ${n}`;
+      if (front) this.count.setAttribute('aria-label', `Card ${cur + 1} of ${n}: ${front.title}, ${front.status}`);
+      this.prevBtn.disabled = cur <= 0;
+      this.nextBtn.disabled = cur >= n - 1;
+    }
+
     place() {
       if (this.state === 'idle') return;
       const box = this.pet.petBox();
@@ -151,11 +203,12 @@
       this.el.style.transform = `translate3d(${Math.round(p.left)}px,${Math.round(p.top)}px,0)`;
     }
 
-    // Height when expanded: pill, gap, a full deck of cards and the n / total control.
+    // Height when expanded: pill, gap, and the deck (front card plus the edges peeking below it).
+    // The card arrows are in the pill, so they add nothing.
     reserve() {
       const css = getComputedStyle(this.el);
       const num = (name, fallback) => parseFloat(css.getPropertyValue(name)) || fallback;
-      return num('--pill-height', 38) + 12 + num('--card-height', 64) + 3 * num('--stack-step-y', 7) + 8 + 30;
+      return num('--pill-height', 38) + (parseFloat(css.rowGap) || 4) + num('--card-height', 64) + 3 * num('--stack-step-y', 7);
     }
   }
 

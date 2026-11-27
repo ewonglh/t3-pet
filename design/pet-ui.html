@@ -126,19 +126,19 @@
         <div class="card" data-status="done">
           <button class="card__main" type="button" tabindex="-1">
             <svg class="icon card__status" aria-label="Completed" role="img"><use href="#i-circle-check"/></svg>
-            <span class="card__body"><span class="card__line"><span class="card__title">Tell me a story</span><span class="card__dot" aria-hidden="true">&bull;</span><span class="card__snippet">Every night, Mina left a saucer of milk on the windowsill for the moon. Every night&hellip;</span></span><span class="card__meta"><b>Claude</b><i aria-hidden="true">&middot;</i><span>writing-notes</span></span></span>
+            <span class="card__body"><span class="card__line"><span class="card__title">Tell me a story</span><span class="card__snippet">Every night, Mina left a saucer of milk on the windowsill for the moon. Every night&hellip;</span></span><span class="card__meta"><b>Claude</b><i aria-hidden="true">&middot;</i><span>writing-notes</span></span></span>
             <span class="card__end"><span class="card__time">2m</span><span class="card__open">Open <svg class="icon"><use href="#i-arrow-up-right"/></svg></span></span>
           </button>
         </div>
       </div></div>
-      <figcaption><b>Completed.</b> Green tick, bold title, dot, one-line snippet that truncates with an ellipsis, relative time. A quiet line below names the provider and project.</figcaption>
+      <figcaption><b>Completed.</b> Green tick, bold title, then the snippet, flowing over up to two lines and ending in an ellipsis; relative time. A quiet line below names the provider and project.</figcaption>
     </figure>
     <figure>
       <div class="stage wall-lagoon short"><div class="desk">
         <div class="card" data-status="failed">
           <button class="card__main" type="button" tabindex="-1">
             <svg class="icon card__status" aria-label="Failed" role="img"><use href="#i-circle-x"/></svg>
-            <span class="card__body"><span class="card__line"><span class="card__title">Refactor date helpers</span><span class="card__dot" aria-hidden="true">&bull;</span><span class="card__snippet">Stopped: the type check failed in two files and I could not fix it without changing the API.</span></span><span class="card__meta"><b class="is-failed">Failed</b><i aria-hidden="true">&middot;</i><b>Codex</b><i aria-hidden="true">&middot;</i><span>date-utils</span></span></span>
+            <span class="card__body"><span class="card__line"><span class="card__title">Refactor date helpers</span><span class="card__snippet">Stopped: the type check failed in two files and I could not fix it without changing the API.</span></span><span class="card__meta"><b class="is-failed">Failed</b><i aria-hidden="true">&middot;</i><b>Codex</b><i aria-hidden="true">&middot;</i><span>date-utils</span></span></span>
             <span class="card__end"><span class="card__time">3h</span><span class="card__open">Open <svg class="icon"><use href="#i-arrow-up-right"/></svg></span></span>
           </button>
         </div>
@@ -150,7 +150,7 @@
         <div class="card is-hover" data-status="done">
           <button class="card__main" type="button" tabindex="-1">
             <svg class="icon card__status" aria-label="Completed" role="img"><use href="#i-circle-check"/></svg>
-            <span class="card__body"><span class="card__line"><span class="card__title">Fix login redirect</span><span class="card__dot" aria-hidden="true">&bull;</span><span class="card__snippet">Signed-in users now land on the page they asked for, and I added a test.</span></span><span class="card__meta"><b>Codex</b><i aria-hidden="true">&middot;</i><span>web-app</span></span></span>
+            <span class="card__body"><span class="card__line"><span class="card__title">Fix login redirect</span><span class="card__snippet">Signed-in users now land on the page they asked for, and I added a test.</span></span><span class="card__meta"><b>Codex</b><i aria-hidden="true">&middot;</i><span>web-app</span></span></span>
             <span class="card__end"><span class="card__time">14m</span><span class="card__open">Open <svg class="icon"><use href="#i-arrow-up-right"/></svg></span></span>
           </button>
           <button class="card__dismiss" type="button" tabindex="-1" aria-label="Dismiss Fix login redirect"><svg class="icon"><use href="#i-x"/></svg></button>
@@ -163,7 +163,7 @@
         <div class="card is-focus is-hover" data-status="done">
           <button class="card__main" type="button" tabindex="-1">
             <svg class="icon card__status" aria-label="Completed" role="img"><use href="#i-circle-check"/></svg>
-            <span class="card__body"><span class="card__line"><span class="card__title">Summarise meeting notes</span><span class="card__dot" aria-hidden="true">&bull;</span><span class="card__snippet">Three decisions, two open questions and one action for each person.</span></span><span class="card__meta"><b>Claude</b><i aria-hidden="true">&middot;</i><span>meeting-notes</span></span></span>
+            <span class="card__body"><span class="card__line"><span class="card__title">Summarise meeting notes</span><span class="card__snippet">Three decisions, two open questions and one action for each person.</span></span><span class="card__meta"><b>Claude</b><i aria-hidden="true">&middot;</i><span>meeting-notes</span></span></span>
             <span class="card__end"><span class="card__time">1h</span><span class="card__open">Open <svg class="icon"><use href="#i-arrow-up-right"/></svg></span></span>
           </button>
           <button class="card__dismiss" type="button" tabindex="-1" aria-label="Dismiss Summarise meeting notes"><svg class="icon"><use href="#i-x"/></svg></button>
@@ -340,8 +340,7 @@
     var st = icon(t.status === 'failed' ? 'i-circle-x' : 'i-circle-check', 'card__status');
     st.setAttribute('role', 'img'); st.setAttribute('aria-label', t.status === 'failed' ? 'Failed' : 'Completed');
     var body = mk('span', 'card__body'), line = mk('span', 'card__line');
-    var dot = mk('span', 'card__dot', '\u2022'); dot.setAttribute('aria-hidden', 'true');
-    line.append(mk('span', 'card__title', t.title), dot, mk('span', 'card__snippet', t.snippet));
+    line.append(mk('span', 'card__title', t.title), mk('span', 'card__snippet', t.snippet));
     var meta = mk('span', 'card__meta');
     function sep() { var i = mk('i', null, '\u00b7'); i.setAttribute('aria-hidden', 'true'); return i; }
     if (t.status === 'failed') meta.append(mk('b', 'is-failed', 'Failed'), sep());
