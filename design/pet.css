@@ -100,7 +100,7 @@
   padding: 0 var(--space-4) 0 14px; border-radius: inherit; min-width: 0;
 }
 .card__body { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.card__line { display: flex; align-items: baseline; gap: 7px; min-width: 0; }
+.card__line { display: flex; align-items: baseline; gap: var(--space-3); min-width: 0; } /* no separator glyph: weight, colour and the gap tell title and snippet apart */
 .card__meta { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 11px; line-height: 1.2; color: var(--muted-foreground); white-space: nowrap; overflow: hidden; }
 .card__meta b { font-weight: var(--weight-medium); color: var(--muted-foreground); }
 .card__meta i { font-style: normal; opacity: 0.6; }
@@ -110,7 +110,6 @@
 .card[data-status="done"] .card__status { color: var(--success-foreground); }
 .card[data-status="failed"] .card__status { color: var(--error-foreground); }
 .card__title { font-weight: var(--weight-semibold); white-space: nowrap; flex: 0 1 auto; max-width: 58%; overflow: hidden; text-overflow: ellipsis; }
-.card__dot { color: var(--muted-foreground); flex: none; }
 .card__snippet { font-size: 12.5px; flex: 1 1 0; min-width: 0; color: var(--muted-foreground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card__end { position: relative; flex: none; display: grid; justify-items: end; min-width: 44px; }
 .card__time, .card__open { grid-area: 1 / 1; white-space: nowrap; transition: opacity var(--dur-fade) linear; }

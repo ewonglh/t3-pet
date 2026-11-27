@@ -105,10 +105,8 @@
       st.setAttribute('aria-label', failed ? 'Failed' : 'Completed');
       const body = mk('span', 'card__body');
       const line = mk('span', 'card__line');
-      const dot = mk('span', 'card__dot', '•');
-      dot.setAttribute('aria-hidden', 'true');
       line.append(mk('span', 'card__title', t.title));
-      if (t.snippet) line.append(dot, mk('span', 'card__snippet', t.snippet));
+      if (t.snippet) line.append(mk('span', 'card__snippet', t.snippet));
       body.append(line);
       // Provider and project are not in the data yet, so failed cards carry only the label.
       if (failed) {
