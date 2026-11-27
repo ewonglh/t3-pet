@@ -1,0 +1,26 @@
+/* Overlay-only layout for the pill and stack. Component looks come from design/pet.css and every
+   value from design/tokens.css. */
+.t3-shell {
+  position: fixed; left: 0; top: 0; z-index: 5;
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
+  cursor: default;
+  font: var(--weight-regular) var(--text-base)/1.3 var(--font-sans);
+  color: var(--foreground);
+}
+.t3-shell[data-state="idle"] { display: none; }
+.t3-shell[data-side="above"] { flex-direction: column-reverse; }
+.t3-shell .pill { margin-top: 0; }
+.t3-shell .pill__badge[hidden] { display: none; } /* pet.css sets display: grid, which beats [hidden] */
+.t3-shell[data-state="expanded"] .pill__badge { display: none; } /* the count moves to the n / total control */
+.t3-shell__stack { display: none; width: var(--card-width); flex-direction: column; align-items: center; }
+.t3-shell[data-state="expanded"] .t3-shell__stack { display: flex; }
+
+/* Shown in the stack slot until there are cards. Not in the mockups: same glass as the pill. */
+.t3-shell__empty {
+  margin: 0; padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill);
+  background: var(--pill-surface); color: var(--muted-foreground); border: 1px solid var(--pill-border);
+  box-shadow: var(--pill-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  font-size: var(--text-sm);
+}

@@ -69,6 +69,7 @@
       this.facing = 0; this.faceHold = 0; this.phase = 0;
       this.chasing = false; this.running = false;
       this.hover = false; this.drag = null;
+      this.hold = false; // the pill or cards are open: stay put and keep the head clear
       this.seed = Math.random() * 100;
       this.last = performance.now();
       this.raf = 0; this.timer = 0;
@@ -223,6 +224,13 @@
       b.animate([{ transform: 'scale(0.4)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' });
     }
 
+    // While the pill or cards are open the pet stops following the cursor and hides its bubble.
+    setHold(on) {
+      this.hold = !!on;
+      if (this.hold) this.chasing = false;
+      this.kick();
+    }
+
     // Use a Petdex Sheet (see spritesheet.js) in place of the built-in mascot, or null to go back.
     setSheet(sheet) {
       this.sheet = sheet || null;
@@ -329,7 +337,7 @@
 
       // follow the cursor horizontally, keeping a little distance
       let desired = 0;
-      const canMove = !this.paused && !this.asleep && c.has && !this.busyAnim() && !this.hover;
+      const canMove = !this.paused && !this.asleep && c.has && !this.busyAnim() && !this.hover && !this.hold;
       if (canMove) {
         const dx = c.x - this.x;
         const side = dx > 0 ? -1 : 1; // which side of the cursor we're on
@@ -438,7 +446,7 @@
 
       // bubble
       const st = this.status.state;
-      const showBubble = st !== 'idle' && !this.asleep;
+      const showBubble = st !== 'idle' && !this.asleep && !this.hold;
       if (!showBubble) {
         this.bubbleWrap.style.display = 'none';
         this.bubbleKey = '';
@@ -468,6 +476,7 @@
         this.bubbleWrap.style.display = 'block';
         this.bubbleWrap.style.transform = `translate3d(${this.snap(bl)}px,${this.snap(btop)}px,0)`;
       }
+      this.host.frame && this.host.frame();
     }
 
     moving() {

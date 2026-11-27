@@ -94,10 +94,11 @@
   --pill-divider: var(--border);
   --pill-shadow: 0 10px 24px -12px rgb(24 24 27 / 40%);
 
-  /* Badge: rounded square, dark text on emerald-400 (~8:1; white on emerald-500 would be ~2.5:1) */
-  --badge-bg: #34d399;                      /* emerald-400 */
-  --badge-fg: #022c22;                      /* emerald-950 */
-  --badge-radius: 5px;
+  /* Badge: a circle (a capsule for 2+ digits), no ring. Light: white on emerald-700, 5.5:1 for the
+     text and for the circle against the white pill (emerald-400 would be 1.9:1 there). */
+  --badge-bg: #047857;                      /* emerald-700 */
+  --badge-fg: #ffffff;
+  --badge-radius: 999px;
 
   /* Controls */
   --control-surface: color-mix(in srgb, var(--foreground) 5%, transparent);
@@ -141,6 +142,8 @@
 /* Dark */
 [data-theme="dark"] {
   color-scheme: dark;
+  --badge-bg: #34d399;                      /* emerald-400, 9.8:1 against the dark pill */
+  --badge-fg: #022c22;                      /* emerald-950, 7.9:1 */
   --glass-blur: 16px;                       /* [index.css] dark override */
   --glass-saturation: 1.08;                 /* [index.css] dark override */
   --background: #0a0a0a;                    /* [palette] canvas */
@@ -182,6 +185,8 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
+    --badge-bg: #34d399;                      /* emerald-400, 9.8:1 against the dark pill */
+    --badge-fg: #022c22;                      /* emerald-950, 7.9:1 */
     --glass-blur: 16px;                       /* [index.css] dark override */
     --glass-saturation: 1.08;                 /* [index.css] dark override */
     --background: #0a0a0a;                    /* [palette] canvas */
