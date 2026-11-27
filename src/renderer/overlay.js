@@ -30,12 +30,13 @@
     openMenu() { api.openMenu(); },
     openCard(id) { api.openCard(id); },
     dismissCard(id) { api.dismissCard(id); },
+    openLive() { api.openLive(); },
   });
   api.on('cards', (list) => shell.setCards(Array.isArray(list) ? list : []));
 
   api.on('display', (d) => pet.setBounds(d.width, d.height, d.reason));
   api.on('cursor', (c) => { pet.pointer(c.x, c.y); shell.pointer(c.x, c.y); });
-  api.on('status', (s) => pet.setStatus(s));
+  api.on('status', (s) => { pet.setStatus(s); shell.setLive(s && s.live); });
   api.on('paused', (p) => pet.setPaused(p));
   // A Petdex pet from the main process, or null for the built-in mascot. Anything wrong with a
   // pet leaves the built-in mascot. Only the latest choice counts if loads finish out of order.

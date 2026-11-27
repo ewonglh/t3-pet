@@ -34,7 +34,7 @@
 
       this.root = mk('div', 'stack');
       this.root.setAttribute('role', 'list');
-      this.root.setAttribute('aria-label', 'Completed threads');
+      this.root.setAttribute('aria-label', 'Threads');
       slot.append(this.root);
 
       this.root.addEventListener('click', (e) => {
@@ -51,14 +51,28 @@
     get length() { return this.cards.length; }
     get front() { return this.cards[this.cur] ? this.cards[this.cur].data : null; }
 
-    // list: [{ id, title, status, completedAt, snippet, read }], newest first.
+    // list: [{ id, title, status, completedAt, snippet, read, thread }], newest first, with an
+    // optional live card in front ({ id: 'live', live: true, state, title, more, thread }; see
+    // T3CardView.withLive).
     set(list) {
       const oldIds = this.cards.map((c) => c.id);
       const byId = new Map(this.cards.map((c) => [c.id, c]));
       const first = this.cards.length === 0;
+      // The live card turns into its thread's completed card in place: when it goes and a new card
+      // for the same thread arrives, that card takes over the live card's element.
+      const was = byId.get(V.LIVE_ID);
+      if (was && was.data.thread && !list.some((d) => d.id === V.LIVE_ID && d.thread === was.data.thread)) {
+        const done = list.find((d) => !d.live && d.thread === was.data.thread && !byId.has(d.id));
+        if (done) { byId.delete(V.LIVE_ID); byId.set(done.id, was); was.id = done.id; }
+      }
       const next = list.map((data) => {
         const have = byId.get(data.id);
-        if (have) { byId.delete(data.id); have.data = data; return have; }
+        if (have) {
+          byId.delete(data.id);
+          if (JSON.stringify(have.data) !== JSON.stringify(data)) this.fill(have.el, data);
+          have.data = data;
+          return have;
+        }
         const el = this.make(data);
         if (!first) el.dataset.d = 'enter';
         return { id: data.id, el, data };
@@ -76,37 +90,57 @@
     make(t) {
       const li = mk('div', 'card');
       li.setAttribute('role', 'listitem');
-      li.dataset.status = t.status === 'failed' ? 'failed' : 'done';
+      this.fill(li, t);
+      return li;
+    }
+
+    // (Re)builds a card's contents, so one element can change from live to completed in place.
+    fill(li, t) {
+      const live = !!t.live;
+      const failed = !live && t.status === 'failed';
+      const waiting = live && t.state === 'waiting';
+      li.dataset.status = live ? (waiting ? 'waiting' : 'working') : failed ? 'failed' : 'done';
+      li.toggleAttribute('data-live', live);
+      // A forced state from the tray has no thread: nothing to open.
+      if (live && !t.thread) li.setAttribute('aria-disabled', 'true'); else li.removeAttribute('aria-disabled');
+
       const main = mk('button', 'card__main');
       main.type = 'button';
-      const failed = t.status === 'failed';
-      const st = icon(failed ? 'circle-x' : 'circle-check', 'card__status');
+      const label = live ? (waiting ? 'Needs your input' : 'Working') : failed ? 'Failed' : 'Completed';
+      const st = icon(live ? (waiting ? 'circle-alert' : 'loader-circle') : failed ? 'circle-x' : 'circle-check', 'card__status');
       st.removeAttribute('aria-hidden');
       st.setAttribute('role', 'img');
-      st.setAttribute('aria-label', failed ? 'Failed' : 'Completed');
+      st.setAttribute('aria-label', label);
       const body = mk('span', 'card__body');
       const line = mk('span', 'card__line');
-      // Title, then (failed runs) a red label, then the snippet, flowing over up to two lines.
-      // Provider and project are not in the data yet, so there is no meta line.
-      line.append(mk('span', 'card__title', t.title));
-      if (failed) {
-        const label = mk('span', 'is-failed', 'Failed');
-        label.setAttribute('aria-hidden', 'true'); // the status icon already says it
-        line.append(label);
+      // Title, then a status word (live) or red label (failed), then the snippet, flowing over up
+      // to two lines. Provider and project are not in the data yet, so there is no meta line.
+      if (t.title) line.append(mk('span', 'card__title', t.title));
+      if (live) {
+        const word = mk('span', 'is-live', waiting ? 'Needs your input' : 'Working…');
+        word.setAttribute('aria-hidden', 'true'); // the status icon already says it
+        line.append(word);
+        if (t.more) line.append(mk('span', 'is-more', `+${t.more} more`));
+      } else if (failed) {
+        const tag = mk('span', 'is-failed', 'Failed');
+        tag.setAttribute('aria-hidden', 'true');
+        line.append(tag);
       }
-      if (t.snippet) line.append(mk('span', 'card__snippet', t.snippet));
+      if (!live && t.snippet) line.append(mk('span', 'card__snippet', t.snippet));
       body.append(line);
       const end = mk('span', 'card__end');
       const open = mk('span', 'card__open', 'Open ');
       open.append(icon('arrow-up-right'));
-      end.append(mk('span', 'card__time', V.relTime(t.completedAt, Date.now())), open);
+      end.append(mk('span', 'card__time', live ? '' : V.relTime(t.completedAt, Date.now())), open);
       main.append(st, body, end);
-      const dis = mk('button', 'card__dismiss');
-      dis.type = 'button';
-      dis.setAttribute('aria-label', `Dismiss ${t.title}`);
-      dis.append(icon('x'));
-      li.append(main, dis);
-      return li;
+      li.replaceChildren(main);
+      if (!live) { // live cards go away by themselves
+        const dis = mk('button', 'card__dismiss');
+        dis.type = 'button';
+        dis.setAttribute('aria-label', `Dismiss ${t.title}`);
+        dis.append(icon('x'));
+        li.append(dis);
+      }
     }
 
     render() {
@@ -114,8 +148,7 @@
         c.el.dataset.d = V.depth(i, this.cur);
         const front = i === this.cur;
         c.el.setAttribute('aria-hidden', front ? 'false' : 'true');
-        c.el.querySelector('.card__main').tabIndex = front ? 0 : -1;
-        c.el.querySelector('.card__dismiss').tabIndex = front ? 0 : -1;
+        for (const b of c.el.querySelectorAll('button')) b.tabIndex = front ? 0 : -1;
       });
       this.host.changed();
     }
@@ -150,7 +183,9 @@
 
     tick() {
       const now = Date.now();
-      for (const c of this.cards) c.el.querySelector('.card__time').textContent = V.relTime(c.data.completedAt, now);
+      for (const c of this.cards) {
+        if (!c.data.live) c.el.querySelector('.card__time').textContent = V.relTime(c.data.completedAt, now);
+      }
     }
   }
 

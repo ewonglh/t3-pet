@@ -31,3 +31,5 @@ Caveat: the paths were typed from memory of the Lucide set, not copied from the 
 | minus, square, x | Window controls; clear search | settings.html |
 | rotate-ccw | Reset keybind | settings.html |
 | plus | Add a pet folder | settings.html |
+| loader-circle | Live card: working (spins; static with reduced motion) | src/renderer/index.html |
+| circle-alert | Live card: needs your input | src/renderer/index.html |

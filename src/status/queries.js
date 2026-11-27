@@ -77,18 +77,34 @@ function computeStatus(db, now = Date.now()) {
   });
   const failed = recent.find((r) => r.status === 'failed');
   const completed = recent.find((r) => r.status === 'completed');
+  const live = liveOf(pending, running);
 
   if (pending.length) {
     const p = pending[0];
-    return { state: 'waiting', title: p.title || '', count: pending.length, key: `waiting:${p.thread_id}:${p.created_at}`, threadId: p.thread_id || null };
+    return { state: 'waiting', title: p.title || '', count: pending.length, key: `waiting:${p.thread_id}:${p.created_at}`, threadId: p.thread_id || null, live };
   }
-  if (failed) return { state: 'error', title: failed.title || '', count: 1, key: `error:${failed.run_id}`, threadId: failed.thread_id || null };
-  if (completed) return { state: 'done', title: completed.title || '', count: 1, key: `done:${completed.run_id}`, threadId: completed.thread_id || null };
+  if (failed) return { state: 'error', title: failed.title || '', count: 1, key: `error:${failed.run_id}`, threadId: failed.thread_id || null, live };
+  if (completed) return { state: 'done', title: completed.title || '', count: 1, key: `done:${completed.run_id}`, threadId: completed.thread_id || null, live };
   if (running.length) {
     const r = running[0];
-    return { state: 'working', title: r.title || '', count: running.length, key: `working:${r.thread_id}`, threadId: r.thread_id || null };
+    return { state: 'working', title: r.title || '', count: running.length, key: `working:${r.thread_id}`, threadId: r.thread_id || null, live };
   }
-  return { state: 'idle', title: '', count: 0, key: 'idle' };
+  return { state: 'idle', title: '', count: 0, key: 'idle', live: null };
+}
+
+// The thread to show on the live card, whatever the pet is showing: the latest one waiting on you,
+// else the latest one running. `more` counts the other threads that are running or waiting.
+// A "done" or "error" flash outranks working for the pet, but not for the card.
+function liveOf(pending, running) {
+  const top = pending[0] || running[0];
+  if (!top) return null;
+  const threads = new Set([...pending, ...running].map((r) => r.thread_id));
+  return {
+    state: pending[0] ? 'waiting' : 'working',
+    title: top.title || '',
+    threadId: top.thread_id || null,
+    more: Math.max(0, threads.size - 1),
+  };
 }
 
 // One line of plain text from a message: markdown marks and line breaks removed, cut at max.

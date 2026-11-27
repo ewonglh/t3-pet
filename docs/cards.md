@@ -1,6 +1,22 @@
-# Completed-thread cards
+# Thread cards
 
-Each T3 thread with a finished turn gets one card in the stack under (or above) the pet, showing its latest turn. Hover the pet, then click the bell to open the stack.
+Each T3 thread with a finished turn gets one card in the stack next to the pet, showing its latest turn. A thread that is working or waiting on you gets a live card at the front. The cards replace the speech bubble the pet used to have.
+
+## When cards show
+
+- **At rest** (not hovering): just the front card, while a thread is running or waiting, or a card is unread. With nothing running and nothing unread, the pet stands alone.
+- **Hovering** the pet or the front card adds the pill and the cards peeking out behind. The front card does not move: it always sits next to the pet, and the rest grows away from it (upwards when the stack is above the pet, downwards when it is below).
+- With nothing at rest, hovering shows the pill only; the bell opens the stack.
+- Nothing shows while the pet is being carried.
+
+## The live card
+
+- Working: a spinning icon (still, with reduced motion), the thread title, "Working…". Waiting: an amber icon, the title, "Needs your input".
+- With more than one thread running or waiting, the card shows the latest (waiting first) and "+N more".
+- Clicking it opens that thread. It has no dismiss button; it goes away by itself.
+- While a thread is live, its older completed card is hidden, so it never shows twice.
+- When the run finishes, the live card turns into the thread's completed or failed card in place. It waits up to 2.5 seconds for that card to arrive.
+- A state forced from the tray State menu has no thread: the card shows the state with no title, and clicking it does nothing.
 
 ## One card per thread
 
@@ -39,4 +55,6 @@ The bell's badge counts cards that have not been opened. Dismissing a card also 
 
 - `src/main/cards.js`: the list, the cap, read and dismissed marks, and saving them. Thread ids stay in the main process.
 - `src/renderer/cards.js`: draws the stack. It sends back only the run id of a card that was clicked or dismissed.
-- `src/shared/card-view.js`: relative times and each card's depth in the deck.
+- `src/shared/card-view.js`: relative times, each card's depth in the deck, and putting the live card in front.
+- `src/shared/overlay-shell.js`: what shows (nothing, the front card, the pill, or everything) and where.
+- `src/status/queries.js`: which thread is live (`live` in the status). The main process (`src/main.js`) gives the renderer a token per thread instead of its id, used only to match a live card to its completed card.

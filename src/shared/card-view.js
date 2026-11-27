@@ -58,5 +58,15 @@
     };
   }
 
-  return { BEHIND, relTime, depth, keepFront, wheelStepper };
+  // The deck: the live card (if any) at the front, then the completed cards. A thread that is
+  // running again hides its older card, so it never shows twice. live: { state, title, more,
+  // thread } or null; cards carry an opaque `thread` token from the main process.
+  const LIVE_ID = 'live';
+  function withLive(list, live) {
+    if (!live) return list;
+    const rest = live.thread ? list.filter((c) => c.thread !== live.thread) : list;
+    return [{ id: LIVE_ID, live: true, state: live.state, title: live.title || '', more: live.more || 0, thread: live.thread || null }, ...rest];
+  }
+
+  return { BEHIND, LIVE_ID, relTime, depth, keepFront, wheelStepper, withLive };
 });

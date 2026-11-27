@@ -17,7 +17,6 @@
     runAbove: 420, // distance at which it starts running
     gravity: 2600,
     sleepAfter: 30000, // ms without cursor movement
-    captionMs: 4500,
     footPad: 2,
     hurtFloorSpeed: 1250, // landing faster than this (px/s at 3x) hurts: a drop from ~1/3 of a 1080p screen
     hurtWallSpeed: 650, // hitting a screen edge faster than this hurts
@@ -25,8 +24,6 @@
     bandageMs: 20000,
     grumpyMs: 7000,
   };
-
-  const LABEL = { working: 'working', waiting: 'waiting on you', done: 'done', error: 'error' };
 
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -43,16 +40,11 @@
       this.host = host;
       this.shadow = el('canvas', 't3-shadow');
       this.stage = el('canvas', 't3-stage');
-      this.bubbleWrap = el('div', 't3-bubble');
-      this.bubble = document.createElement('canvas');
-      this.bubble.style.cssText = 'display:block;image-rendering:pixelated;transform-origin:50% 100%;';
-      this.bubbleWrap.appendChild(this.bubble);
       this.shadow.width = SH_W; this.shadow.height = SH_H;
       this.stage.width = W; this.stage.height = H;
-      root.append(this.shadow, this.stage, this.bubbleWrap);
+      root.append(this.shadow, this.stage);
       this.sctx = this.stage.getContext('2d');
       this.shctx = this.shadow.getContext('2d');
-      this.bctx = this.bubble.getContext('2d');
       this.buf = new S.Pix(W, H);
       this.shbuf = new S.Pix(SH_W, SH_H);
 
@@ -61,7 +53,6 @@
       this.mode = 'ground';
       this.cursor = { x: 0, y: 0, has: false, movedAt: performance.now() };
       this.status = { state: 'idle', title: '', key: '', since: 0 };
-      this.captionUntil = 0;
       this.paused = false;
       this.asleep = false; this.sleepSince = 0;
       this.timers = { land: Infinity, wake: Infinity, petted: Infinity, hurt: Infinity, ouch: Infinity, drag: 0, fall: 0 };
@@ -75,7 +66,6 @@
       this.raf = 0; this.timer = 0;
       this.frame = null;
       this.sheet = null;
-      this.bubbleKey = '';
       this.kick();
     }
 
@@ -131,8 +121,9 @@
         this.mode = d.palt > 1 ? 'fall' : 'ground';
         this.x = d.px; this.alt = d.palt; this.vy = 0;
         // A click while a thread status is showing opens that thread (and is a friendly pet,
-        // never a poke). With nothing to open it is a poke, as before.
-        if (this.status.state !== 'idle' && this.status.threadId && this.host.openThread) {
+        // never a poke). With nothing to open it is a poke, as before. The thread id stays in the
+        // main process; the status only says whether there is one.
+        if (this.status.state !== 'idle' && this.status.canOpen && this.host.openThread) {
           this.pet();
           this.host.openThread();
         } else {
@@ -151,10 +142,7 @@
       const state = (s && s.state) || 'idle';
       const key = (s && s.key) || state + ':' + ((s && s.title) || '');
       if (key !== this.status.key || state !== this.status.state) {
-        const changed = state !== this.status.state;
-        this.status = { state, title: (s && s.title) || '', key, since: performance.now(), threadId: (s && s.threadId) || null };
-        if (state !== 'idle') this.captionUntil = performance.now() + CFG.captionMs;
-        if (changed) this.popBubble();
+        this.status = { state, title: (s && s.title) || '', key, since: performance.now(), canOpen: !!(s && (s.canOpen || s.threadId)) };
         if (state !== 'idle' && this.asleep) this.wakeUp(true);
       }
       this.kick();
@@ -218,13 +206,7 @@
       }
     }
 
-    popBubble() {
-      const b = this.bubble;
-      if (!b.animate) return;
-      b.animate([{ transform: 'scale(0.4)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' });
-    }
-
-    // While the pill or cards are open the pet stops following the cursor and hides its bubble.
+    // While the pill or cards are open the pet stops following the cursor.
     setHold(on) {
       this.hold = !!on;
       if (this.hold) this.chasing = false;
@@ -241,9 +223,11 @@
       this.kick();
     }
 
-    petBox() {
+    // steady: leave out the animation's own hops, so things placed against the pet (the cards)
+    // stay put while it celebrates. Falling and being carried still move it.
+    petBox(steady = false) {
       const u = this.u();
-      const feetY = this.groundY() - this.alt - (this.frame ? this.frame.offsetY * u : 0);
+      const feetY = this.groundY() - this.alt - (!steady && this.frame ? this.frame.offsetY * u : 0);
       if (this.sheet) {
         const s = u / 3, b = this.sheet.box;
         return {
@@ -262,8 +246,6 @@
       if (hover !== this.hover) {
         this.hover = hover;
         this.host.setClickable && this.host.setClickable(hover);
-        if (hover && this.status.state !== 'idle') this.captionUntil = Infinity;
-        else if (!hover && this.captionUntil === Infinity) this.captionUntil = performance.now() + 1500;
       }
     }
 
@@ -419,7 +401,6 @@
         top = this.snap(ground - this.alt - lift - (box.bottom + 1) * s);
         this.stage.style.width = G.FRAME_W * s + 'px';
         this.stage.style.height = G.FRAME_H * s + 'px';
-        info = { top: (box.top * s) / u };
         f.fps = Math.max(f.fps || 0, sh.fps(row));
       } else {
         const buf = this.buf;
@@ -444,38 +425,6 @@
       this.shadow.style.height = SH_H * u + 'px';
       this.shadow.style.transform = `translate3d(${this.snap(this.x - (SH_W / 2) * u)}px,${this.snap(ground - (SH_H / 2 + 1.5) * u)}px,0)`;
 
-      // bubble
-      const st = this.status.state;
-      const showBubble = st !== 'idle' && !this.asleep && !this.hold;
-      if (!showBubble) {
-        this.bubbleWrap.style.display = 'none';
-        this.bubbleKey = '';
-      } else {
-        const captionOn = this.status.title && (this.hover || now < this.captionUntil);
-        let caption = null;
-        if (captionOn) {
-          caption = `${LABEL[st]}: ${this.status.title}`;
-          if (caption.length > 40) caption = caption.slice(0, 38).trimEnd() + '…';
-        }
-        const bt = (now - this.status.since) / 1000;
-        const key = `${st}|${caption}|${Math.floor(bt * 6) % 4}|${Math.floor(bt * 4) % 2}`;
-        if (key !== this.bubbleKey) {
-          this.bubbleKey = key;
-          const bb = S.renderBubble(st, bt, caption);
-          if (this.bubble.width !== bb.w || this.bubble.height !== bb.h) {
-            this.bubble.width = bb.w; this.bubble.height = bb.h;
-          }
-          bb.toCanvas(this.bctx);
-          this.bubble.style.width = bb.w * u + 'px';
-          this.bubble.style.height = bb.h * u + 'px';
-        }
-        const bw = this.bubble.width * u, bh = this.bubble.height * u;
-        const headTop = top + info.top * u;
-        const bl = clamp(this.x - bw / 2, 4, this.w - bw - 4);
-        const btop = Math.max(4, headTop - bh - 1 * u);
-        this.bubbleWrap.style.display = 'block';
-        this.bubbleWrap.style.transform = `translate3d(${this.snap(bl)}px,${this.snap(btop)}px,0)`;
-      }
       this.host.frame && this.host.frame();
     }
 

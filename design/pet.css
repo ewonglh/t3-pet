@@ -124,6 +124,17 @@
 .card__status { width: 18px; height: 18px; }
 .card[data-status="done"] .card__status { color: var(--success-foreground); }
 .card[data-status="failed"] .card__status { color: var(--error-foreground); }
+/* Live card (#48): a thread working or waiting on you. No time and no dismiss: it goes by itself. */
+.card[data-status="working"] .card__status { color: var(--muted-foreground); animation: card-spin 1s linear infinite; }
+.card[data-status="waiting"] .card__status { color: var(--waiting-foreground); }
+.card[data-live] .card__time { display: none; }
+.card[data-live][aria-disabled="true"] .card__main { cursor: default; }
+.card[data-live][aria-disabled="true"] .card__open { display: none; }
+.card__line .is-live { font-size: 12.5px; color: var(--muted-foreground); }
+.card__line .is-more { font-size: 12.5px; color: var(--muted-foreground); opacity: 0.75; margin-inline-start: var(--space-2); }
+@keyframes card-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .card[data-status="working"] .card__status { animation: none; } }
+:root[data-motion="reduce"] .card[data-status="working"] .card__status { animation: none; }
 .card__title { font-weight: var(--weight-semibold); color: var(--card-foreground); margin-inline-end: var(--space-2); }
 .card__snippet { font-size: 12.5px; color: var(--muted-foreground); }
 .card__end { position: relative; flex: none; display: grid; justify-items: end; min-width: 44px; }
@@ -157,7 +168,8 @@
 .stack .card {
   position: absolute; top: 0; left: 0; transform-origin: 50% 0;
   --d: 0;
-  transform: translateY(calc(var(--d) * var(--stack-step-y))) scale(calc(1 - var(--d) * var(--stack-step-scale)));
+  /* --stack-dir: 1 peeks downwards (default), -1 upwards (the overlay, when it sits above the pet) */
+  transform: translateY(calc(var(--d) * var(--stack-step-y) * var(--stack-dir, 1))) scale(calc(1 - var(--d) * var(--stack-step-scale)));
   opacity: calc(1 - var(--d) * var(--stack-step-fade));
   z-index: calc(10 - var(--d));
   transition: transform var(--dur-move) var(--ease-out), opacity var(--dur-fade) linear, background var(--dur-fast) linear;
@@ -174,12 +186,12 @@
 /* Already seen: lifts away upward and fades */
 .stack .card[data-d="passed"] {
   --d: 0; opacity: 0; pointer-events: none; z-index: 20;
-  transform: translateY(calc(var(--stack-travel) * -1)) scale(1.01);
+  transform: translateY(calc(var(--stack-travel) * -1 * var(--stack-dir, 1))) scale(1.01);
 }
 /* Entering (new completion) starts here, then settles into data-d="0" */
-.stack .card[data-d="enter"] { --d: 0; opacity: 0; transform: translateY(calc(var(--stack-travel) * -1)) scale(0.98); }
+.stack .card[data-d="enter"] { --d: 0; opacity: 0; transform: translateY(calc(var(--stack-travel) * -1 * var(--stack-dir, 1))) scale(0.98); }
 /* Dismissed */
-.stack .card[data-d="leaving"] { --d: 0; opacity: 0; transform: translateY(-6px) scale(0.98); pointer-events: none; z-index: 20; }
+.stack .card[data-d="leaving"] { --d: 0; opacity: 0; transform: translateY(calc(-6px * var(--stack-dir, 1))) scale(0.98); pointer-events: none; z-index: 20; }
 
 /* Position indicator with arrow-key hints */
 .stack-nav {

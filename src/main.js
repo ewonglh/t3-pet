@@ -116,8 +116,32 @@ function effectiveStatus() {
   return forced || live || { state: 'idle', title: '', key: 'idle' };
 }
 
-function pushStatus() {
+// The renderer never gets thread ids. Where it has to tell threads apart (a live card turning into
+// that thread's completed card), it gets a token that only this process can map back.
+const threadTokens = new Map();
+function tokenFor(threadId) {
+  if (!threadId) return null;
+  if (!threadTokens.has(threadId)) threadTokens.set(threadId, `t${threadTokens.size + 1}`);
+  return threadTokens.get(threadId);
+}
+
+// The live card: the thread working or waiting on you. A forced working or waiting state has no
+// thread, so its card has no title and opens nothing.
+function liveCard() {
+  if (forced) return forced.state === 'working' || forced.state === 'waiting' ? { state: forced.state, title: '', thread: null, more: 0 } : null;
+  const l = live && live.live;
+  return l ? { state: l.state, title: l.title || '', thread: tokenFor(l.threadId), more: l.more || 0 } : null;
+}
+
+// What the renderer sees of the status: no thread ids.
+function statusView() {
   const s = effectiveStatus();
+  const key = s.threadId ? String(s.key).split(s.threadId).join(tokenFor(s.threadId)) : s.key; // keys can embed the id
+  return { state: s.state, title: s.title, key, canOpen: !!s.threadId, live: liveCard() };
+}
+
+function pushStatus() {
+  const s = statusView();
   const k = JSON.stringify(s);
   if (k !== lastSent) {
     lastSent = k;
@@ -221,6 +245,10 @@ function openThreadId(threadId) {
 }
 
 function openThread() { openThreadId(effectiveStatus().threadId); }
+function openLive() {
+  const l = !forced && live && live.live;
+  if (l) openThreadId(l.threadId);
+}
 
 // ---- cards --------------------------------------------------------------------------------
 // Completed runs shown as cards under the pet. See src/main/cards.js and docs/cards.md.
@@ -229,7 +257,10 @@ let cardsQueued = false;
 function sendCards() {
   if (cardsQueued || !cards) return;
   cardsQueued = true; // a burst of runs at start-up goes out as one update
-  setImmediate(() => { cardsQueued = false; send('cards', cards.view()); });
+  setImmediate(() => {
+    cardsQueued = false;
+    send('cards', cards.view().map((c) => ({ ...c, thread: tokenFor((cards.get(c.id) || {}).threadId) })));
+  });
 }
 function openCard(runId) {
   const card = cards && cards.get(runId);
@@ -280,6 +311,9 @@ function choosePet(key) {
 // ---- ipc ----------------------------------------------------------------------------------
 ipcMain.on('open-thread', (e) => {
   if (win && e.sender === win.webContents) openThread();
+});
+ipcMain.on('live-open', (e) => {
+  if (win && e.sender === win.webContents) openLive();
 });
 ipcMain.on('card-open', (e, runId) => {
   if (win && e.sender === win.webContents && typeof runId === 'string') openCard(runId);

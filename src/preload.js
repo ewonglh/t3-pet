@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('petAPI', {
   openThread: () => ipcRenderer.send('open-thread'),
   openApp: () => ipcRenderer.send('open-app'),
   openMenu: () => ipcRenderer.send('open-menu'),
+  openLive: () => ipcRenderer.send('live-open'),
   openCard: (id) => ipcRenderer.send('card-open', String(id)),
   dismissCard: (id) => ipcRenderer.send('card-dismiss', String(id)),
   ready: () => ipcRenderer.send('ready'),
