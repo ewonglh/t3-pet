@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { createCardStore, KEEP_MS } = require('../src/main/cards');
-const { relTime, depth, keepFront } = require('../src/shared/card-view');
+const { relTime, depth, keepFront, wheelStepper } = require('../src/shared/card-view');
 
 const H = 3600 * 1000;
 const NOW = 1_800_000_000_000;
@@ -136,4 +136,23 @@ test('view: deck depth and keeping the front card', () => {
   assert.equal(keepFront(['a', 'b', 'c'], ['a', 'c'], 1), 1); // b dismissed: c moves up
   assert.equal(keepFront(['a', 'b'], ['a'], 1), 0);
   assert.equal(keepFront([], [], 0), 0);
+});
+
+test('view: wheel steps one card per notch, adds up trackpad deltas, and paces a fling', () => {
+  const step = wheelStepper({ threshold: 50, gap: 150, idle: 250 });
+  assert.equal(step(100, 0, 0), 1); // mouse notch down: older card
+  assert.equal(step(100, 0, 50), 0); // too soon after a step
+  assert.equal(step(-100, 0, 400), -1); // notch up: back to newer
+  assert.equal(step(0, 0, 410), 0); // sideways scroll does nothing
+
+  const pad = wheelStepper({ threshold: 50, gap: 150, idle: 250 });
+  assert.equal(pad(20, 0, 0), 0);
+  assert.equal(pad(20, 0, 16), 0);
+  assert.equal(pad(20, 0, 32), 1); // 60px adds up to one step
+  assert.equal(pad(20, 0, 1000), 0); // a pause clears the partial scroll
+  assert.equal(pad(-20, 0, 1016), 0); // a change of direction starts again
+  assert.equal(pad(-40, 0, 1032), -1);
+
+  const lines = wheelStepper();
+  assert.equal(lines(3, 1, 0), 1); // line mode: 3 lines is 120px
 });

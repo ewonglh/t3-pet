@@ -23,7 +23,9 @@
     return s;
   }
 
-  // host: { open(id), dismiss(id), changed() } — changed() after the stack's size may have moved.
+  // host: { open(id), dismiss(id), changed() } — changed() after the front card, the count or the
+  // stack's size may have moved. The arrows and "n / total" live in the pill (shell.js), which
+  // reads `cur`, `length` and `front` and calls `go` or `step`.
   class CardStack {
     constructor(slot, host) {
       this.host = host;
@@ -33,20 +35,8 @@
       this.root = mk('div', 'stack');
       this.root.setAttribute('role', 'list');
       this.root.setAttribute('aria-label', 'Completed threads');
-      this.nav = mk('div', 'stack-nav');
-      this.nav.setAttribute('role', 'group');
-      this.nav.setAttribute('aria-label', 'Browse completed threads');
-      this.prevBtn = this.keycap('prev', 'Previous card', 'arrow-up');
-      this.count = mk('span', 'stack-nav__count');
-      this.count.setAttribute('aria-live', 'polite');
-      this.nextBtn = this.keycap('next', 'Next card', 'arrow-down');
-      this.nav.append(this.prevBtn, this.count, this.nextBtn);
-      slot.append(this.root, this.nav);
+      slot.append(this.root);
 
-      this.nav.addEventListener('click', (e) => {
-        const b = e.target.closest('[data-act]');
-        if (b) this.go(this.cur + (b.dataset.act === 'next' ? 1 : -1));
-      });
       this.root.addEventListener('click', (e) => {
         const el = e.target.closest('.card');
         const i = this.cards.findIndex((c) => c.el === el);
@@ -58,17 +48,8 @@
       setInterval(() => this.tick(), TICK_MS);
     }
 
-    keycap(act, label, iconId) {
-      const b = mk('button', 'keycap');
-      b.type = 'button';
-      b.dataset.act = act;
-      b.setAttribute('aria-label', label);
-      b.title = label;
-      b.append(icon(iconId));
-      return b;
-    }
-
     get length() { return this.cards.length; }
+    get front() { return this.cards[this.cur] ? this.cards[this.cur].data : null; }
 
     // list: [{ id, title, status, completedAt, snippet, read }], newest first.
     set(list) {
@@ -129,7 +110,6 @@
     }
 
     render() {
-      const n = this.cards.length;
       this.cards.forEach((c, i) => {
         c.el.dataset.d = V.depth(i, this.cur);
         const front = i === this.cur;
@@ -137,14 +117,10 @@
         c.el.querySelector('.card__main').tabIndex = front ? 0 : -1;
         c.el.querySelector('.card__dismiss').tabIndex = front ? 0 : -1;
       });
-      const front = this.cards[this.cur];
-      this.count.textContent = n ? `${this.cur + 1} / ${n}` : '0 / 0';
-      if (front) this.count.setAttribute('aria-label', `Card ${this.cur + 1} of ${n}: ${front.data.title}, ${front.data.status}`);
-      this.nav.hidden = n < 2;
-      this.prevBtn.disabled = this.cur <= 0;
-      this.nextBtn.disabled = this.cur >= n - 1;
       this.host.changed();
     }
+
+    step(d) { this.go(this.cur + d); }
 
     go(i) {
       const n = this.cards.length;

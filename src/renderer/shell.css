@@ -2,7 +2,7 @@
    value from design/tokens.css. */
 .t3-shell {
   position: fixed; left: 0; top: 0; z-index: 5;
-  display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-1);
   cursor: default;
   font: var(--weight-regular) var(--text-base)/1.3 var(--font-sans);
   color: var(--foreground);
@@ -11,15 +11,14 @@
 .t3-shell[data-side="above"] { flex-direction: column-reverse; }
 .t3-shell .pill { margin-top: 0; }
 .t3-shell .pill__badge[hidden] { display: none; } /* pet.css sets display: grid, which beats [hidden] */
-.t3-shell[data-state="expanded"] .pill__badge { display: none; } /* the count moves to the n / total control */
+.t3-shell[data-state="expanded"] .pill__badge { display: none; } /* the count moves to n / total in the pill */
 .t3-shell__stack { display: none; width: var(--card-width); flex-direction: column; align-items: center; }
 .t3-shell[data-state="expanded"] .t3-shell__stack { display: flex; }
 .t3-shell .stack { margin-top: 0; }
-/* The arrows sit on the peeking edges of the cards behind, just under the front card, instead of
-   below the whole deck. Saves about 28px. The edges either side stay clickable. */
-.t3-shell .stack-nav { position: relative; z-index: 15; margin-top: calc(1px - 3 * var(--stack-step-y)); }
-.t3-shell__stack[data-empty] .stack,
-.t3-shell__stack[data-empty] .stack-nav { display: none; }
+.t3-shell__stack[data-empty] .stack { display: none; }
+/* The card arrows and n / total join the pill once the bell is pressed (shell.js also hides them
+   for fewer than two cards). The pill stays centred, so it grows out to both sides. */
+.t3-shell:not([data-state="expanded"]) .pill__nav { display: none; }
 
 /* Shown in the stack slot until there are cards. Not in the mockups: same glass as the pill. */
 .t3-shell__empty {

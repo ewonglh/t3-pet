@@ -99,3 +99,7 @@ The bottom of the Keyboard section has a **Test commands** group: a switch (off 
 ## Badge (revised in #10)
 
 The count badge is a circle (a capsule for two or more digits) with no ring, replacing the earlier rounded square with a ring in the pill colour. It sits just inside the pill's edge, so the pill is its only background, and its colour changes with the theme to keep contrast without an outline: white on emerald-700 in light, dark on emerald-400 in dark.
+
+## Stack navigation (revised in #11)
+
+The separate "n / total" pill under the deck is gone. Once the bell is pressed, the card arrows and "n / total" join the right end of the action pill, after a divider, and the pill stays centred over the cards. Arrows are pill buttons with 15px icons; a disabled arrow fades to 35%. The gap between the pill and the deck is 4px (it was 12px): the peeking edges already separate them. Together these take the open shell from 145px to 127px tall. Two alternatives were mocked and set aside: a vertical pill to the right of the deck (about 40px wider) and dismiss-style chips on the deck's right edge (small targets, crowded against "Open"). Scrolling over the open shell also steps through the cards.

@@ -34,5 +34,29 @@
     return Math.max(0, Math.min(cur, newIds.length - 1));
   }
 
-  return { BEHIND, relTime, depth, keepFront };
+  // Turns wheel events into one-card steps. A mouse notch (about 100px) is one step; a trackpad's
+  // stream of small deltas adds up until it passes the threshold. After a step, further steps wait
+  // `gap` ms so one fling does not race through the deck. A pause of `idle` ms clears a partial
+  // scroll. Returns a function (deltaY, deltaMode, now) => -1 (back to newer), 0 or 1 (older).
+  const LINE_PX = 40;
+  const PAGE_PX = 400;
+  function wheelStepper({ threshold = 50, gap = 150, idle = 250 } = {}) {
+    let acc = 0;
+    let lastEvent = -Infinity;
+    let lastStep = -Infinity;
+    return function step(deltaY, deltaMode, now) {
+      const px = deltaY * (deltaMode === 1 ? LINE_PX : deltaMode === 2 ? PAGE_PX : 1);
+      if (!px) return 0; // sideways scroll
+      if (now - lastEvent > idle || Math.sign(px) !== Math.sign(acc)) acc = 0;
+      lastEvent = now;
+      acc += px;
+      if (Math.abs(acc) < threshold || now - lastStep < gap) return 0;
+      const dir = Math.sign(acc);
+      acc = 0;
+      lastStep = now;
+      return dir;
+    };
+  }
+
+  return { BEHIND, relTime, depth, keepFront, wheelStepper };
 });

@@ -69,6 +69,15 @@
   cursor: pointer; transition: background var(--dur-fast) linear;
 }
 .pill__btn:hover { background: var(--pill-hover); }
+.pill__btn:disabled { opacity: 0.35; cursor: default; background: transparent; }
+/* Card arrows and "n / total" inside the pill (the overlay shows them only while the stack is open). */
+.pill__nav { display: inline-flex; align-items: center; gap: 2px; }
+.pill__nav[hidden] { display: none; }
+.pill__nav .pill__btn .icon { width: 15px; height: 15px; }
+.pill__count {
+  min-width: 30px; text-align: center;
+  font: var(--weight-medium) var(--text-sm)/1 var(--font-sans); font-variant-numeric: tabular-nums;
+}
 .pill__sep { width: 1px; height: 16px; background: var(--pill-divider); margin: 0 2px; }
 /* Circle for one digit, capsule for more. No ring: it sits inside the pill's edge, so its only
    background is the pill, and the badge colours are chosen for contrast against it (tokens.css). */
