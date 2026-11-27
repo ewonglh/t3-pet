@@ -21,7 +21,7 @@ A desktop pet for T3 Code on Windows, forked from [kausthubh-coder/t3-pet](https
 - `src/shared/`: built-in sprite drawing and animations; Petdex sheet layout (`sheet-grid.js`) and which row an animation plays (`pet-rows.js`).
 - `src/main/pets.js`: lists, loads and validates pet folders. `src/main/settings.js`: the remembered pet choice. `src/renderer/spritesheet.js`: draws its frames.
 - `design/`: design tokens and mockups. `design/tokens.css` is the source of truth for colours, radii, blur and spacing.
-- `docs/`: spec, decisions, data-source notes.
+- `docs/`: spec, decisions, data-source notes, animations, pets (where to get them, licensing).
 
 ## Tracker
 
@@ -72,7 +72,7 @@ When a milestone closes, tag the release commit `vX.Y.Z` and create a GitHub rel
 - Read only the specific T3 files an issue names: `~/.t3/userdata/statev2.sqlite` and `~/.t3/userdata/environment-id`. Never read, list or log anything else in `~/.t3/userdata`, especially the `secrets` folder.
 - T3 storage is private and can change in any update. Keep every table, column and file name in `src/status/`, behind the `StatusSource` interface, so a break is a one-file fix. Do not scatter them through the renderer.
 - Thread links use `t3code://threads/<environmentId>/<threadId>` (`t3code-dev://` for dev builds), URL-encoded, opened with `shell.openExternal`. Never use `https://` links; they open a browser page.
-- Never commit third-party pet art. Petdex pets belong to their creators. `design/assets/` and screenshots that show a pet are git-ignored.
+- Never commit third-party pet art. Petdex pets belong to their creators. `design/assets/`, `pets/`, pet spritesheet images and screenshots that show a pet are git-ignored. See `docs/pets.md`.
 - Do not hard-code personal paths, IDs or account names. Resolve paths from the home directory.
 
 ## Design

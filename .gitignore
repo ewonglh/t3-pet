@@ -8,3 +8,8 @@ videos/
 # third-party pet art and screenshots that show it
 design/assets/
 design/*.png
+pets/
+spritesheet.webp
+spritesheet.png
+*-spritesheet.webp
+*-spritesheet.png
