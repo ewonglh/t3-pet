@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { createCardStore, KEEP_MS } = require('../src/main/cards');
-const { relTime, depth, keepFront, wheelStepper } = require('../src/shared/card-view');
+const { relTime, depth, keepFront, wheelStepper, withLive } = require('../src/shared/card-view');
 
 const H = 3600 * 1000;
 const NOW = 1_800_000_000_000;
@@ -155,4 +155,14 @@ test('view: wheel steps one card per notch, adds up trackpad deltas, and paces a
 
   const lines = wheelStepper();
   assert.equal(lines(3, 1, 0), 1); // line mode: 3 lines is 120px
+});
+
+test('view: the live card goes in front and hides the older card of its thread', () => {
+  const list = [{ id: 'r1', thread: 't1' }, { id: 'r2', thread: 't2' }];
+  assert.equal(withLive(list, null), list);
+  const deck = withLive(list, { state: 'working', title: 'Fix it', more: 2, thread: 't2' });
+  assert.deepEqual(deck.map((c) => c.id), ['live', 'r1']);
+  assert.deepEqual(deck[0], { id: 'live', live: true, state: 'working', title: 'Fix it', more: 2, thread: 't2' });
+  // a forced state has no thread: nothing is hidden
+  assert.deepEqual(withLive(list, { state: 'waiting' }).map((c) => c.id), ['live', 'r1', 'r2']);
 });

@@ -67,6 +67,7 @@
   --success-foreground: #047857;            /* emerald-700 */
   --error: #fb2c36;                         /* [palette] error */
   --error-foreground: #c10007;              /* [palette] errorForeground */
+  --waiting-foreground: #b45309;            /* amber-700 [mine]: the live card's "needs your input" icon */
 
   /* Pet surfaces [approx: derived from the tokens above] */
   --card-surface: color-mix(in srgb, var(--popover) var(--glass-opacity-card), transparent);
@@ -162,6 +163,7 @@
   --success-foreground: #34d399;            /* emerald-400 */
   --error: #fb414a;                         /* [palette] error */
   --error-foreground: #ff6467;              /* [palette] errorForeground */
+  --waiting-foreground: #fbbf24;            /* amber-400 [mine] */
 
     --sidebar: #000000;                       /* [palette] sidebar* roles (dark) */
   --sidebar-foreground: #f1f3f7;
@@ -205,6 +207,7 @@
     --success-foreground: #34d399;            /* emerald-400 */
     --error: #fb414a;                         /* [palette] error */
     --error-foreground: #ff6467;              /* [palette] errorForeground */
+    --waiting-foreground: #fbbf24;            /* amber-400 [mine] */
 
         --sidebar: #000000;                       /* [palette] sidebar* roles (dark) */
     --sidebar-foreground: #f1f3f7;

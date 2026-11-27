@@ -1,8 +1,12 @@
 // The pill and card stack that hang off the pet: which state they are in, and where they go.
-// States: idle (pet alone), hovered (pill), expanded (pill plus stack). The shell sits under the
-// pet when there is room and above it otherwise (with gravity on, the pet stands on the bottom
-// edge, so that means above). The side is decided on the expanded height, so expanding never
-// makes the pill jump to the other side.
+// States: idle (pet alone, or the pill at rest), hovered (pill), expanded (pill plus stack). The
+// shell sits under the pet when there is room and above it otherwise (with gravity on, the pet
+// stands on the bottom edge, so that means above). The side is decided on the expanded height, so
+// expanding never makes it jump to the other side.
+//
+// The pill sits next to the pet and the stack grows beyond it, so the pill does not move when the
+// stack opens. When something is running or unread ("peek"), the pill shows at rest (its bell
+// shows the state). Only the bell opens the stack; hovering never does.
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -27,6 +31,14 @@
     }
   }
 
+  // What to draw: 'none' (pet alone), 'pill', or 'deck' (pill plus stack). The pill stays up at
+  // rest while something is running or unread. Nothing hangs off the pet while it is carried.
+  function view(state, { peek = false, drag = false } = {}) {
+    if (state === 'expanded') return 'deck';
+    if (state === 'hovered') return 'pill';
+    return peek && !drag ? 'pill' : 'none';
+  }
+
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
   // box: the pet's hit box { l, r, t, b } in window pixels. w, h: window size.
@@ -44,5 +56,5 @@
     return !!rect && x >= rect.left - pad && x <= rect.right + pad && y >= rect.top - pad && y <= rect.bottom + pad;
   }
 
-  return { STATES, GAP, MARGIN, LEAVE_MS, nextState, place, contains };
+  return { STATES, GAP, MARGIN, LEAVE_MS, nextState, view, place, contains };
 });

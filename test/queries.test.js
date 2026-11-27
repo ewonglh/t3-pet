@@ -68,3 +68,24 @@ test('an old completed run is idle again', () => {
   run(db, 'r1', 'completed', 600000, 300000);
   assert.equal(computeStatus(db, NOW).state, 'idle');
 });
+
+test('live: the running thread, kept while a finished run flashes done', () => {
+  const db = makeDb();
+  db.prepare('INSERT INTO orchestration_v2_projection_threads (thread_id, title) VALUES (?, ?)').run('th-2', 'Write docs');
+  run(db, 'r1', 'completed', 60000, 2000); // th-1 just finished: the pet shows done
+  db.prepare('INSERT INTO orchestration_v2_projection_runs VALUES (?, ?, ?, ?, ?)').run('r2', 'th-2', 'running', iso(5000), null);
+  const s = computeStatus(db, NOW);
+  assert.equal(s.state, 'done');
+  assert.deepEqual(s.live, { state: 'working', title: 'Write docs', threadId: 'th-2', more: 0 });
+});
+
+test('live: waiting comes first, and other active threads are counted once each', () => {
+  const db = makeDb();
+  db.prepare('INSERT INTO orchestration_v2_projection_threads (thread_id, title) VALUES (?, ?)').run('th-2', 'Write docs');
+  run(db, 'r1', 'running', 9000, null);
+  db.prepare('INSERT INTO orchestration_v2_projection_runs VALUES (?, ?, ?, ?, ?)').run('r2', 'th-2', 'running', iso(5000), null);
+  db.prepare('INSERT INTO orchestration_v2_projection_runtime_requests VALUES (?, ?, ?)').run('th-1', iso(1000), 'pending');
+  const s = computeStatus(db, NOW);
+  assert.deepEqual(s.live, { state: 'waiting', title: 'Fix login redirect', threadId: 'th-1', more: 1 });
+  assert.equal(computeStatus(makeDb(), NOW).live, null);
+});

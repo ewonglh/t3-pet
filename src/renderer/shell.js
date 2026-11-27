@@ -1,9 +1,13 @@
 // The pill and card stack that hang off the pet (see src/shared/overlay-shell.js for the states
 // and placement, and design/ for the look). Built with createElement only, never innerHTML.
-// The stack slot holds the cards (cards.js), or a short note when there are none.
+// The stack slot holds the cards (cards.js), or a short note when there are none. The pill sits
+// next to the pet and the stack grows beyond it. While a thread is running or a card is unread,
+// the pill stays up without hovering, and its bell shows the state: a spinner while working, an
+// amber alert while a thread waits on you. That replaces the speech bubble the pet used to draw.
 (function () {
   'use strict';
   const L = window.T3OverlayShell;
+  const V = window.T3CardView;
   const SVG = 'http://www.w3.org/2000/svg';
 
   function icon(id) {
@@ -33,7 +37,9 @@
     return s;
   };
 
-  // host: { setClickable(on), openApp(), openMenu(), openCard(id), dismissCard(id) }.
+  const HANDOFF_MS = 2500; // how long a finished live card waits for its completed card
+
+  // host: { setClickable(on), openApp(), openMenu(), openCard(id), dismissCard(id), openLive() }.
   // pet: the PetController.
   class Shell {
     constructor(root, pet, host) {
@@ -44,10 +50,15 @@
       this.overShell = false;
       this.leaveTimer = 0;
       this.unread = 0;
+      this.view = 'none';
+      this.list = []; // completed cards from the main process
+      this.live = null; // the live card, or null
+      this.ending = null; // { live, ids, timer }: a live card waiting to turn into its completed card
 
       this.el = document.createElement('div');
       this.el.className = 't3-shell';
       this.el.dataset.state = 'idle';
+      this.el.dataset.view = 'none';
 
       this.pill = document.createElement('div');
       this.pill.className = 'pill';
@@ -85,7 +96,10 @@
       this.stack.appendChild(this.empty);
       this.stack.dataset.empty = '';
       this.cards = new window.T3CardStack(this.stack, {
-        open: (id) => this.host.openCard(id),
+        open: (id) => {
+          if (id !== V.LIVE_ID) this.host.openCard(id);
+          else if (this.cards.front && this.cards.front.thread) this.host.openLive();
+        },
         dismiss: (id) => this.host.dismissCard(id),
         changed: () => {
           const empty = this.cards.length === 0;
@@ -96,7 +110,7 @@
         },
       });
 
-      this.el.append(this.pill, this.stack);
+      this.el.append(this.pill, this.stack); // pill first: next to the pet (column-reverse above it)
       root.appendChild(this.el);
 
       this.openBtn.addEventListener('click', () => this.host.openApp());
@@ -105,7 +119,7 @@
       this.prevBtn.addEventListener('click', () => this.cards.step(-1));
       this.nextBtn.addEventListener('click', () => this.cards.step(1));
       // Scrolling anywhere over the open shell steps through the cards; down goes to older ones.
-      const wheel = window.T3CardView.wheelStepper();
+      const wheel = V.wheelStepper();
       this.el.addEventListener('wheel', (e) => {
         if (this.state !== 'expanded' || this.cards.length < 2) return;
         const d = wheel(e.deltaY, e.deltaMode, e.timeStamp);
@@ -117,7 +131,7 @@
     petHover(on) { this.overPet = !!on; this.update(); }
 
     pointer(x, y) {
-      if (this.state === 'idle') return;
+      if (this.view === 'none') return;
       const over = L.contains(this.el.getBoundingClientRect(), x, y, 4);
       if (over !== this.overShell) { this.overShell = over; this.update(); }
     }
@@ -126,8 +140,37 @@
 
     // list: cards from the main process, newest first. The badge counts the unread ones.
     setCards(list) {
-      this.cards.set(list);
+      this.list = list;
+      const e = this.ending;
+      if (e && list.some((c) => c.thread === e.live.thread && !e.ids.has(c.id))) this.endHandoff(); // it arrived
       this.setUnread(list.filter((c) => !c.read).length);
+      this.refresh();
+    }
+
+    // live: { state, title, more, thread } or null, from the status.
+    setLive(live) {
+      const prev = this.live;
+      this.live = live || null;
+      if (this.live) this.endHandoff();
+      else if (prev && prev.thread && !this.ending) {
+        // The run finished: keep its card up until the completed card arrives, so one turns into
+        // the other in place (cards.js) rather than one leaving and another arriving.
+        const ids = new Set(this.list.filter((c) => c.thread === prev.thread).map((c) => c.id));
+        this.ending = { live: prev, ids, timer: setTimeout(() => { this.ending = null; this.refresh(); }, HANDOFF_MS) };
+      }
+      this.labelBell();
+      this.refresh();
+    }
+
+    endHandoff() {
+      if (!this.ending) return;
+      clearTimeout(this.ending.timer);
+      this.ending = null;
+    }
+
+    refresh() {
+      this.cards.set(V.withLive(this.list, this.live || (this.ending && this.ending.live)));
+      this.updateView();
     }
 
     setUnread(n) {
@@ -138,7 +181,7 @@
     }
 
     // The pet calls this after each frame it draws, so the shell follows it while it settles.
-    frame() { if (this.state !== 'idle') this.place(); }
+    frame() { this.updateView(); if (this.view !== 'none') this.place(); }
 
     // ---- internals ---------------------------------------------------------------------
     update() {
@@ -151,8 +194,10 @@
       } else if (this.state !== 'idle' && !this.leaveTimer) {
         this.leaveTimer = setTimeout(() => { this.leaveTimer = 0; this.set('leave'); }, L.LEAVE_MS);
       }
-      this.host.setClickable(this.overPet || (this.state !== 'idle' && this.overShell));
+      this.host.setClickable(this.overPet || (this.view !== 'none' && this.overShell));
     }
+
+    peek() { return !!(this.live || this.ending) || this.unread > 0; }
 
     set(event) {
       const next = L.nextState(this.state, event);
@@ -161,23 +206,43 @@
       if (next === 'idle') {
         this.overShell = false;
         clearTimeout(this.leaveTimer); this.leaveTimer = 0;
-        this.host.setClickable(this.overPet);
       }
       this.el.dataset.state = next;
       this.bellBtn.setAttribute('aria-expanded', String(next === 'expanded'));
       this.labelBell();
       this.pet.setHold(next !== 'idle');
+      this.updateView();
       this.place();
     }
 
+    // What shows follows from the state, whether anything is running or unread, and dragging.
+    updateView() {
+      const view = L.view(this.state, { peek: this.peek(), drag: !!this.pet.drag });
+      if (view === this.view) return;
+      this.view = view;
+      this.el.dataset.view = view;
+      if (view === 'none') this.overShell = false;
+      this.host.setClickable(this.overPet || (view !== 'none' && this.overShell));
+      this.place();
+    }
+
+    // The bell doubles as the status light: an amber alert while a thread waits on you, a spinner
+    // while one is working, else the bell. Open, it is a chevron. The unread badge stays on top.
     labelBell() {
       const open = this.state === 'expanded';
-      const label = open ? 'Hide completed threads'
+      const live = this.live ? this.live.state : '';
+      const unread = this.unread ? `${this.unread} unread` : '';
+      const about = this.live && this.live.title ? `: ${this.live.title}` : '';
+      const label = open ? 'Hide threads'
+        : live === 'waiting' ? `Needs your input${about}${unread ? `. ${unread}` : ''}`
+        : live === 'working' ? `Working${about}${unread ? `. ${unread}` : ''}`
         : this.unread ? `Show ${this.unread} completed thread${this.unread === 1 ? '' : 's'}` : 'Show completed threads';
       this.bellBtn.setAttribute('aria-label', label);
       this.bellBtn.title = label;
+      this.bellBtn.dataset.live = open ? '' : live;
       // The chevron points the way the stack folds: towards the pill.
-      const id = !open ? 'bell' : this.el.dataset.side === 'above' ? 'chevron-down' : 'chevron-up';
+      const id = open ? (this.el.dataset.side === 'above' ? 'chevron-down' : 'chevron-up')
+        : live === 'waiting' ? 'circle-alert' : live === 'working' ? 'loader-circle' : 'bell';
       this.bellBtn.querySelector('use').setAttribute('href', `#i-${id}`);
     }
 
@@ -187,14 +252,15 @@
       const front = this.cards.front;
       this.nav.hidden = n < 2;
       this.count.textContent = `${cur + 1} / ${n}`;
-      if (front) this.count.setAttribute('aria-label', `Card ${cur + 1} of ${n}: ${front.title}, ${front.status}`);
+      const what = front && (front.live ? (front.state === 'waiting' ? 'needs your input' : 'working') : front.status);
+      if (front) this.count.setAttribute('aria-label', `Card ${cur + 1} of ${n}: ${front.title || 'untitled'}, ${what}`);
       this.prevBtn.disabled = cur <= 0;
       this.nextBtn.disabled = cur >= n - 1;
     }
 
     place() {
-      if (this.state === 'idle') return;
-      const box = this.pet.petBox();
+      if (this.view === 'none') return;
+      const box = this.pet.petBox(true);
       const p = L.place({
         box, w: this.pet.w, h: this.pet.h,
         width: this.el.offsetWidth, height: this.el.offsetHeight, reserve: this.reserve(),
@@ -203,8 +269,8 @@
       this.el.style.transform = `translate3d(${Math.round(p.left)}px,${Math.round(p.top)}px,0)`;
     }
 
-    // Height when expanded: pill, gap, and the deck (front card plus the edges peeking below it).
-    // The card arrows are in the pill, so they add nothing.
+    // Height when expanded: pill, gap, and the deck (front card plus the peeking edges). The card
+    // arrows are in the pill, so they add nothing.
     reserve() {
       const css = getComputedStyle(this.el);
       const num = (name, fallback) => parseFloat(css.getPropertyValue(name)) || fallback;

@@ -7,8 +7,11 @@
 //
 //   onActivityChange(handler)  handler(status | null)
 //     The current activity: { state: 'idle' | 'working' | 'waiting' | 'done' | 'error', title,
-//     count, key, threadId }. Called when it changes, not on every poll. null means there is no
-//     data (T3 not installed, or its database unreadable); see onModeChange.
+//     count, key, threadId, live }. Called when it changes, not on every poll. null means there is
+//     no data (T3 not installed, or its database unreadable); see onModeChange.
+//     live is the thread for the live card, or null: { state: 'working' | 'waiting', title,
+//     threadId, more }, where more counts the other running or waiting threads. It ignores the
+//     done and error flashes, so it still names a running thread while the pet shows "done".
 //
 //   onRunCompleted(handler)    handler({ runId, threadId, title, status, completedAt, snippet })
 //     Called once per finished run, oldest first. status is 'completed' or 'failed'; completedAt

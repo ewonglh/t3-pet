@@ -1,5 +1,5 @@
 /* Overlay-only layout for the pill and stack. Component looks come from design/pet.css and every
-   value from design/tokens.css. */
+   value from design/tokens.css. data-view (shell.js): none, pill, deck. */
 .t3-shell {
   position: fixed; left: 0; top: 0; z-index: 5;
   display: flex; flex-direction: column; align-items: center; gap: var(--space-1);
@@ -7,18 +7,23 @@
   font: var(--weight-regular) var(--text-base)/1.3 var(--font-sans);
   color: var(--foreground);
 }
-.t3-shell[data-state="idle"] { display: none; }
+.t3-shell[data-view="none"] { display: none; }
+/* The pill comes first, so it sits next to the pet; above the pet the column is reversed. */
 .t3-shell[data-side="above"] { flex-direction: column-reverse; }
 .t3-shell .pill { margin-top: 0; }
 .t3-shell .pill__badge[hidden] { display: none; } /* pet.css sets display: grid, which beats [hidden] */
-.t3-shell[data-state="expanded"] .pill__badge { display: none; } /* the count moves to n / total in the pill */
+.t3-shell[data-view="deck"] .pill__badge { display: none; } /* the count moves to n / total in the pill */
 .t3-shell__stack { display: none; width: var(--card-width); flex-direction: column; align-items: center; }
-.t3-shell[data-state="expanded"] .t3-shell__stack { display: flex; }
+.t3-shell[data-view="deck"] .t3-shell__stack { display: flex; }
 .t3-shell .stack { margin-top: 0; }
 .t3-shell__stack[data-empty] .stack { display: none; }
-/* The card arrows and n / total join the pill once the bell is pressed (shell.js also hides them
+/* The card arrows and n / total join the pill once the stack is open (shell.js also hides them
    for fewer than two cards). The pill stays centred, so it grows out to both sides. */
-.t3-shell:not([data-state="expanded"]) .pill__nav { display: none; }
+.t3-shell:not([data-view="deck"]) .pill__nav { display: none; }
+
+/* The deck grows away from the pill: above the pet, the cards behind peek out upwards. */
+.t3-shell[data-side="above"] .stack { --stack-dir: -1; }
+.t3-shell[data-side="above"] .stack .card { top: auto; bottom: 0; transform-origin: 50% 100%; }
 
 /* Shown in the stack slot until there are cards. Not in the mockups: same glass as the pill. */
 .t3-shell__empty {

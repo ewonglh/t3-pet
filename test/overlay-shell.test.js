@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { nextState, place, contains } = require('../src/shared/overlay-shell');
+const { nextState, view, place, contains } = require('../src/shared/overlay-shell');
 
 test('state: hover shows the pill, the bell expands and collapses, leaving hides it', () => {
   assert.equal(nextState('idle', 'enter'), 'hovered');
@@ -13,6 +13,15 @@ test('state: hover shows the pill, the bell expands and collapses, leaving hides
   assert.equal(nextState('expanded', 'leave'), 'idle');
   assert.equal(nextState('hovered', 'hide'), 'idle');
   assert.equal(nextState('hovered', 'nonsense'), 'hovered');
+});
+
+
+test('view: the pill shows at rest only when something is running or unread', () => {
+  assert.equal(view('idle'), 'none');
+  assert.equal(view('idle', { peek: true }), 'pill');
+  assert.equal(view('idle', { peek: true, drag: true }), 'none');
+  assert.equal(view('hovered', { peek: true }), 'pill');
+  assert.equal(view('expanded'), 'deck');
 });
 
 const screen = { w: 1920, h: 1040 };
