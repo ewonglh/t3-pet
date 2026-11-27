@@ -206,9 +206,11 @@ function registerHotkeys() {
 // ---- open thread --------------------------------------------------------------------------
 // Opens the thread behind the current status in the T3 Code desktop app. The thread id comes
 // from our own status, never from the renderer. Forced (hotkey) statuses have none.
+const linkScheme = () => process.env.T3PET_SCHEME || 't3code'; // t3code-dev for a dev build of T3 Code
+
 function openThread() {
   const link = buildThreadLink({
-    scheme: process.env.T3PET_SCHEME || 't3code', // t3code-dev for a dev build of T3 Code
+    scheme: linkScheme(),
     environmentId: readEnvironmentId(),
     threadId: effectiveStatus().threadId,
   });
@@ -218,6 +220,14 @@ function openThread() {
   }
   shell.openExternal(link).catch((err) => console.log(`[t3-pet] could not open the thread link: ${err.message}`));
 }
+
+// Brings up the T3 Code desktop app (the pill's "Open T3 Code" button) through its own scheme.
+function openApp() {
+  shell.openExternal(`${linkScheme()}://`).catch((err) => console.log(`[t3-pet] could not open T3 Code: ${err.message}`));
+}
+
+// Rescan for newly installed pets whenever the menu is about to be used.
+function rescanPets() { installedPets = listPets(); updateTray(); }
 
 // ---- pet ----------------------------------------------------------------------------------
 // A Petdex/Codex pet: picked in the tray Pet menu (remembered in settings.json), or given with
@@ -252,6 +262,15 @@ function choosePet(key) {
 ipcMain.on('open-thread', (e) => {
   if (win && e.sender === win.webContents) openThread();
 });
+ipcMain.on('open-app', (e) => {
+  if (win && e.sender === win.webContents) openApp();
+});
+// The pill's gear opens the tray menu until the settings window exists (v0.4.0).
+ipcMain.on('open-menu', (e) => {
+  if (!win || e.sender !== win.webContents || !tray) return;
+  rescanPets();
+  tray.popUpContextMenu();
+});
 ipcMain.on('clickable', (e, on) => {
   if (win && e.sender === win.webContents) win.setIgnoreMouseEvents(!on, { forward: true });
 });
@@ -283,10 +302,8 @@ app.whenReady().then(() => {
   installedPets = listPets();
   createWindow();
   tray = new Tray(trayImage());
-  // Rescan for newly installed pets whenever the menu is about to be used.
-  const rescan = () => { installedPets = listPets(); updateTray(); };
-  tray.on('click', () => { rescan(); tray.popUpContextMenu(); });
-  tray.on('right-click', rescan);
+  tray.on('click', () => { rescanPets(); tray.popUpContextMenu(); });
+  tray.on('right-click', rescanPets);
   registerHotkeys();
 
   t3 = createStatusSource({ log: (m) => console.log(m) });

@@ -16,7 +16,7 @@ A desktop pet for T3 Code on Windows, forked from [kausthubh-coder/t3-pet](https
 ## Layout
 
 - `src/main.js`: Electron main process (overlay window, tray, hotkeys, cursor polling).
-- `src/renderer/`: overlay UI and pet behaviour (`pet.js`).
+- `src/renderer/`: overlay UI and pet behaviour (`pet.js`); the pill and card stack (`shell.js`, `shell.css`, states and placement in `src/shared/overlay-shell.js`). The overlay loads `design/tokens.css` and `design/pet.css` directly.
 - `src/status/`: reads T3 state (polling). All knowledge of T3 internals stays here. Import only `src/status/index.js` (`createStatusSource`); the interface (`onActivityChange`, `onRunCompleted`, `onModeChange`) is documented in `status-source.js`.
 - `src/shared/`: built-in sprite drawing and animations; Petdex sheet layout (`sheet-grid.js`) and which row an animation plays (`pet-rows.js`).
 - `src/main/pets.js`: lists, loads and validates pet folders. `src/main/settings.js`: the remembered pet choice. `src/renderer/spritesheet.js`: draws its frames.
