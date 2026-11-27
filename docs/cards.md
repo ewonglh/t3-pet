@@ -10,8 +10,8 @@ Each T3 thread with a finished turn gets one card in the stack under (or above) 
 
 ## What a card shows
 
-- A green tick (completed) or a red cross with a "Failed" label (failed).
-- The thread title in bold, then one line of the run's last answer, cut short with an ellipsis.
+- A green tick (completed) or a red cross (failed).
+- The thread title in bold, followed by the start of the latest answer, over up to two lines and then an ellipsis. Failed cards put a red "Failed" between the two.
 - How long ago it finished: "now", "5m", "3h", "2d". Times refresh every 30 seconds.
 
 Provider and project names from the mockups are not shown yet, because the data layer does not report them.

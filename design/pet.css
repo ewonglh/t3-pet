@@ -100,7 +100,13 @@
   padding: 0 var(--space-4) 0 14px; border-radius: inherit; min-width: 0;
 }
 .card__body { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.card__line { display: flex; align-items: baseline; gap: var(--space-3); min-width: 0; } /* no separator glyph: weight, colour and the gap tell title and snippet apart */
+/* Title and snippet flow as one paragraph over up to two lines, then an ellipsis. No separator
+   glyph: weight, colour and a small gap tell them apart. */
+.card__line {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+  overflow: hidden; overflow-wrap: anywhere; line-height: 1.35; min-width: 0;
+  color: var(--muted-foreground); /* the clamp ellipsis takes this colour, matching the snippet */
+}
 .card__meta { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 11px; line-height: 1.2; color: var(--muted-foreground); white-space: nowrap; overflow: hidden; }
 .card__meta b { font-weight: var(--weight-medium); color: var(--muted-foreground); }
 .card__meta i { font-style: normal; opacity: 0.6; }
@@ -109,8 +115,8 @@
 .card__status { width: 18px; height: 18px; }
 .card[data-status="done"] .card__status { color: var(--success-foreground); }
 .card[data-status="failed"] .card__status { color: var(--error-foreground); }
-.card__title { font-weight: var(--weight-semibold); white-space: nowrap; flex: 0 1 auto; max-width: 58%; overflow: hidden; text-overflow: ellipsis; }
-.card__snippet { font-size: 12.5px; flex: 1 1 0; min-width: 0; color: var(--muted-foreground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card__title { font-weight: var(--weight-semibold); color: var(--card-foreground); margin-inline-end: var(--space-2); }
+.card__snippet { font-size: 12.5px; color: var(--muted-foreground); }
 .card__end { position: relative; flex: none; display: grid; justify-items: end; min-width: 44px; }
 .card__time, .card__open { grid-area: 1 / 1; white-space: nowrap; transition: opacity var(--dur-fade) linear; }
 .card__time { color: var(--muted-foreground); font-size: 11px; font-variant-numeric: tabular-nums; }
@@ -189,7 +195,8 @@
 .stack-nav { visibility: visible; }
 .stack-nav[hidden] { display: none; }
 
-.card__meta .is-failed { color: var(--error-foreground); font-weight: var(--weight-semibold); }
+.card__meta .is-failed, .card__line .is-failed { color: var(--error-foreground); font-weight: var(--weight-semibold); }
+.card__line .is-failed { font-size: 12.5px; margin-inline-end: var(--space-2); }
 
 /* ---------- Keys-active cue: the overlay has focus while the pointer is over the stack ---------- */
 .stack-nav { transition: border-color var(--dur-fade) linear, box-shadow var(--dur-fade) linear; }

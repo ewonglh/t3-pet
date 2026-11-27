@@ -105,15 +105,16 @@
       st.setAttribute('aria-label', failed ? 'Failed' : 'Completed');
       const body = mk('span', 'card__body');
       const line = mk('span', 'card__line');
+      // Title, then (failed runs) a red label, then the snippet, flowing over up to two lines.
+      // Provider and project are not in the data yet, so there is no meta line.
       line.append(mk('span', 'card__title', t.title));
+      if (failed) {
+        const label = mk('span', 'is-failed', 'Failed');
+        label.setAttribute('aria-hidden', 'true'); // the status icon already says it
+        line.append(label);
+      }
       if (t.snippet) line.append(mk('span', 'card__snippet', t.snippet));
       body.append(line);
-      // Provider and project are not in the data yet, so failed cards carry only the label.
-      if (failed) {
-        const meta = mk('span', 'card__meta');
-        meta.append(mk('b', 'is-failed', 'Failed'));
-        body.append(meta);
-      }
       const end = mk('span', 'card__end');
       const open = mk('span', 'card__open', 'Open ');
       open.append(icon('arrow-up-right'));
