@@ -9,7 +9,6 @@ contextBridge.exposeInMainWorld('petAPI', {
   },
   setClickable: (on) => ipcRenderer.send('clickable', !!on),
   setAsleep: (asleep) => ipcRenderer.send('asleep', !!asleep),
-  openThread: () => ipcRenderer.send('open-thread'),
   openApp: () => ipcRenderer.send('open-app'),
   openMenu: () => ipcRenderer.send('open-menu'),
   openLive: () => ipcRenderer.send('live-open'),

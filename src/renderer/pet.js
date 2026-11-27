@@ -120,15 +120,8 @@
       if (!d.moved && quick) {
         this.mode = d.palt > 1 ? 'fall' : 'ground';
         this.x = d.px; this.alt = d.palt; this.vy = 0;
-        // A click while a thread status is showing opens that thread (and is a friendly pet,
-        // never a poke). With nothing to open it is a poke, as before. The thread id stays in the
-        // main process; the status only says whether there is one.
-        if (this.status.state !== 'idle' && this.status.canOpen && this.host.openThread) {
-          this.pet();
-          this.host.openThread();
-        } else {
-          this.poke();
-        }
+        // A click is a poke (gentle ones are pets). Opening T3 Code is the pill's and the cards' job.
+        this.poke();
       } else {
         this.mode = 'fall'; this.timers.fall = 0;
         this.vx = clamp(d.vx * 0.6, -1400, 1400);
@@ -142,7 +135,7 @@
       const state = (s && s.state) || 'idle';
       const key = (s && s.key) || state + ':' + ((s && s.title) || '');
       if (key !== this.status.key || state !== this.status.state) {
-        this.status = { state, title: (s && s.title) || '', key, since: performance.now(), canOpen: !!(s && (s.canOpen || s.threadId)) };
+        this.status = { state, title: (s && s.title) || '', key, since: performance.now() };
         if (state !== 'idle' && this.asleep) this.wakeUp(true);
       }
       this.kick();
