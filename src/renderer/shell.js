@@ -1,9 +1,9 @@
 // The pill and card stack that hang off the pet (see src/shared/overlay-shell.js for the states
 // and placement, and design/ for the look). Built with createElement only, never innerHTML.
-// The stack slot holds the cards (cards.js), or a short note when there are none. The front card
-// sits next to the pet; the peeking cards and the pill grow away from it. While a thread is
-// running or a card is unread, the front card shows on its own without hovering (the "rest"
-// view), in place of the speech bubble the pet used to draw.
+// The stack slot holds the cards (cards.js), or a short note when there are none. The pill sits
+// next to the pet and the stack grows beyond it. While a thread is running or a card is unread,
+// the pill stays up without hovering, and its bell shows the state: a spinner while working, an
+// amber alert while a thread waits on you. That replaces the speech bubble the pet used to draw.
 (function () {
   'use strict';
   const L = window.T3OverlayShell;
@@ -110,7 +110,7 @@
         },
       });
 
-      this.el.append(this.stack, this.pill); // stack first: next to the pet (column-reverse above it)
+      this.el.append(this.pill, this.stack); // pill first: next to the pet (column-reverse above it)
       root.appendChild(this.el);
 
       this.openBtn.addEventListener('click', () => this.host.openApp());
@@ -132,10 +132,7 @@
 
     pointer(x, y) {
       if (this.view === 'none') return;
-      // At rest only the front card is there to hover; the hidden pill and peeking edges are not.
-      const front = this.view === 'rest' && this.cards.cards[this.cards.cur];
-      const rect = (front ? front.el : this.el).getBoundingClientRect();
-      const over = L.contains(rect, x, y, 4);
+      const over = L.contains(this.el.getBoundingClientRect(), x, y, 4);
       if (over !== this.overShell) { this.overShell = over; this.update(); }
     }
 
@@ -161,6 +158,7 @@
         const ids = new Set(this.list.filter((c) => c.thread === prev.thread).map((c) => c.id));
         this.ending = { live: prev, ids, timer: setTimeout(() => { this.ending = null; this.refresh(); }, HANDOFF_MS) };
       }
+      this.labelBell();
       this.refresh();
     }
 
@@ -223,20 +221,28 @@
       if (view === this.view) return;
       this.view = view;
       this.el.dataset.view = view;
-      if (view === 'rest') this.cards.go(0); // at rest, the newest card is the one that shows
       if (view === 'none') this.overShell = false;
       this.host.setClickable(this.overPet || (view !== 'none' && this.overShell));
       this.place();
     }
 
+    // The bell doubles as the status light: an amber alert while a thread waits on you, a spinner
+    // while one is working, else the bell. Open, it is a chevron. The unread badge stays on top.
     labelBell() {
       const open = this.state === 'expanded';
-      const label = open ? 'Hide completed threads'
+      const live = this.live ? this.live.state : '';
+      const unread = this.unread ? `${this.unread} unread` : '';
+      const about = this.live && this.live.title ? `: ${this.live.title}` : '';
+      const label = open ? 'Hide threads'
+        : live === 'waiting' ? `Needs your input${about}${unread ? `. ${unread}` : ''}`
+        : live === 'working' ? `Working${about}${unread ? `. ${unread}` : ''}`
         : this.unread ? `Show ${this.unread} completed thread${this.unread === 1 ? '' : 's'}` : 'Show completed threads';
       this.bellBtn.setAttribute('aria-label', label);
       this.bellBtn.title = label;
-      // The chevron points the way the stack folds: towards the pet, away from the pill.
-      const id = !open ? 'bell' : this.el.dataset.side === 'above' ? 'chevron-down' : 'chevron-up';
+      this.bellBtn.dataset.live = open ? '' : live;
+      // The chevron points the way the stack folds: towards the pill.
+      const id = open ? (this.el.dataset.side === 'above' ? 'chevron-down' : 'chevron-up')
+        : live === 'waiting' ? 'circle-alert' : live === 'working' ? 'loader-circle' : 'bell';
       this.bellBtn.querySelector('use').setAttribute('href', `#i-${id}`);
     }
 
@@ -264,8 +270,7 @@
     }
 
     // Height when expanded: pill, gap, and the deck (front card plus the peeking edges). The card
-    // arrows are in the pill, so they add nothing. The rest view keeps this box (pill and edges
-    // hidden), so the front card does not move when hovering adds them.
+    // arrows are in the pill, so they add nothing.
     reserve() {
       const css = getComputedStyle(this.el);
       const num = (name, fallback) => parseFloat(css.getPropertyValue(name)) || fallback;

@@ -88,6 +88,11 @@
   font: var(--weight-semibold) 10px/1 var(--font-sans); font-variant-numeric: tabular-nums;
 }
 .pill .icon { width: 17px; height: 17px; }
+/* The bell as the status light (#48): amber alert while a thread waits on you, spinner while one works. */
+.pill__btn[data-live="waiting"] .icon { color: var(--waiting-foreground); }
+.pill__btn[data-live="working"] .icon { color: var(--muted-foreground); animation: card-spin 1s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .pill__btn[data-live="working"] .icon { animation: none; } }
+:root[data-motion="reduce"] .pill__btn[data-live="working"] .icon { animation: none; }
 .pill__btn[aria-expanded="true"] { background: var(--chip-active); }
 .pill__btn:focus-visible, .stack-nav :focus-visible { outline: none; box-shadow: var(--focus-ring); }
 

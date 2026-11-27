@@ -1,12 +1,12 @@
 // The pill and card stack that hang off the pet: which state they are in, and where they go.
-// States: idle (pet alone, or just the front card at rest), hovered (pill), expanded (pill plus
-// stack). The shell sits under the pet when there is room and above it otherwise (with gravity on,
-// the pet stands on the bottom edge, so that means above). The side is decided on the expanded
-// height, so expanding never makes it jump to the other side.
+// States: idle (pet alone, or the pill at rest), hovered (pill), expanded (pill plus stack). The
+// shell sits under the pet when there is room and above it otherwise (with gravity on, the pet
+// stands on the bottom edge, so that means above). The side is decided on the expanded height, so
+// expanding never makes it jump to the other side.
 //
-// The front card sits next to the pet; the peeking cards and the pill grow away from it. So when
-// something is running or unread ("peek"), the front card shows at rest and hovering adds the rest
-// around it without moving it.
+// The pill sits next to the pet and the stack grows beyond it. When something is running or
+// unread ("peek"), the pill shows at rest (its bell shows the state) and hovering opens the stack
+// beyond it, so the pill does not move.
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -21,7 +21,7 @@
 
   // event: 'enter' (pointer over the pet or the shell), 'leave' (grace period over),
   // 'toggle' (bell or chevron clicked), 'hide' (drag started, or anything that dismisses it).
-  // peek: a card is showing at rest, so hovering opens the whole stack around it.
+  // peek: the pill is showing at rest, so hovering opens the stack straight away.
   function nextState(state, event, { peek = false } = {}) {
     switch (event) {
       case 'enter': return state === 'idle' ? (peek ? 'expanded' : 'hovered') : state;
@@ -32,12 +32,12 @@
     }
   }
 
-  // What to draw: 'none' (pet alone), 'rest' (front card only), 'pill', or 'deck' (everything).
-  // Nothing hangs off the pet while it is being carried.
+  // What to draw: 'none' (pet alone), 'pill', or 'deck' (pill plus stack). The pill stays up at
+  // rest while something is running or unread. Nothing hangs off the pet while it is carried.
   function view(state, { peek = false, drag = false } = {}) {
     if (state === 'expanded') return 'deck';
     if (state === 'hovered') return 'pill';
-    return peek && !drag ? 'rest' : 'none';
+    return peek && !drag ? 'pill' : 'none';
   }
 
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));

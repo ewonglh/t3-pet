@@ -234,12 +234,31 @@ function registerHotkeys() {
 // have none.
 const linkScheme = () => process.env.T3PET_SCHEME || 't3code'; // t3code-dev for a dev build of T3 Code
 
+// Windows only lets the app in the foreground bring another app to the front, and the overlay is
+// never focused (focusable: false), so T3 Code would open the thread but stay behind other
+// windows. Right after a click on the overlay, take focus for a moment so the foreground passes on
+// to T3 Code when it handles the link, then go back to never taking focus.
+const LEND_FOCUS_MS = 1500;
+let lendTimer = null;
+function lendForeground() {
+  if (!win || win.isDestroyed() || process.platform !== 'win32') return;
+  clearTimeout(lendTimer);
+  win.setFocusable(true);
+  win.focus();
+  lendTimer = setTimeout(() => {
+    if (!win || win.isDestroyed()) return;
+    if (win.isFocused()) win.blur(); // T3 Code did not take it: do not keep the keyboard
+    win.setFocusable(false);
+  }, LEND_FOCUS_MS);
+}
+
 function openThreadId(threadId) {
   const link = buildThreadLink({ scheme: linkScheme(), environmentId: readEnvironmentId(), threadId });
   if (!link) {
     console.log('[t3-pet] nothing to open: no thread for this status, or no environment id');
     return false;
   }
+  lendForeground();
   shell.openExternal(link).catch((err) => console.log(`[t3-pet] could not open the thread link: ${err.message}`));
   return true;
 }
@@ -273,6 +292,7 @@ function dismissCard(runId) {
 
 // Brings up the T3 Code desktop app (the pill's "Open T3 Code" button) through its own scheme.
 function openApp() {
+  lendForeground();
   shell.openExternal(`${linkScheme()}://`).catch((err) => console.log(`[t3-pet] could not open T3 Code: ${err.message}`));
 }
 

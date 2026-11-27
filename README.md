@@ -53,8 +53,8 @@ T3 Code.
 | idle | none of the above |
 
 The checks run in that order. The app ignores runs on archived or deleted threads, and "running" rows
-more than 6 hours old, which a crash can leave behind. A thread that is working or waiting on you
-shows as a live card next to the pet (see `docs/cards.md`).
+more than 6 hours old, which a crash can leave behind. While a thread is working or waiting on you,
+the pill stays up next to the pet and its bell turns into a spinner or an amber alert (see `docs/cards.md`).
 
 If Electron can't load `node:sqlite`, the app runs `src/status/poll-child.js` with your system `node`
 instead. If the database doesn't exist, the pet still runs and you can set his mood with the hotkeys.
