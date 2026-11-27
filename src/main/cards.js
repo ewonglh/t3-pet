@@ -1,4 +1,5 @@
-// Completed-thread cards: the runs the pet shows, newest first, and which are read or dismissed.
+// Completed-thread cards: one per thread (its latest finished turn), newest first, and which are
+// read or dismissed.
 // Read and dismissed marks are saved in cards.json in Electron's userData folder (never under
 // ~/.t3), so a restart does not bring dismissed cards back: at start-up the status source reports
 // the last 24 hours of runs again. Marks older than that are dropped when the file is written.
@@ -51,14 +52,28 @@ function writeMarks(file, marks, now) {
 function createCardStore({ file = null, cap = CAP, now = Date.now } = {}) {
   const marks = file ? readMarks(file) : { read: new Map(), dismissed: new Map() };
   let cards = []; // { runId, threadId, title, status, completedAt, snippet }, newest first
+  // One card per thread: the latest finished turn. latest remembers the newest turn seen for each
+  // thread, dismissed ones included, so an older turn arriving later never comes back.
+  const latest = new Map(); // thread key -> completedAt
+  const keyOf = (run) => (typeof run.threadId === 'string' && run.threadId ? run.threadId : `run:${run.runId}`);
 
   const save = () => (file ? writeMarks(file, marks, now()) : true);
 
   return {
-    // A finished run from the status source. Returns true if the list changed.
+    // A finished run from the status source. A newer turn on a thread replaces that thread's card
+    // (and is unread again, even if the older card was read or dismissed). Returns true if the
+    // list changed.
     add(run) {
       if (!run || !isId(run.runId) || !isTime(run.completedAt)) return false;
-      if (marks.dismissed.has(run.runId) || cards.some((c) => c.runId === run.runId)) return false;
+      if (cards.some((c) => c.runId === run.runId)) return false;
+      const key = keyOf(run);
+      const seen = latest.get(key);
+      if (seen !== undefined && run.completedAt <= seen) return false; // an older turn
+      latest.set(key, run.completedAt);
+      const before = cards.length;
+      cards = cards.filter((c) => keyOf(c) !== key);
+      const replaced = cards.length !== before;
+      if (marks.dismissed.has(run.runId)) return replaced;
       const card = {
         runId: run.runId,
         threadId: run.threadId,
@@ -68,7 +83,7 @@ function createCardStore({ file = null, cap = CAP, now = Date.now } = {}) {
         snippet: String(run.snippet || ''),
       };
       cards = [...cards, card].sort((a, b) => b.completedAt - a.completedAt).slice(0, cap);
-      return cards.includes(card);
+      return cards.includes(card) || replaced;
     },
 
     get(runId) { return cards.find((c) => c.runId === runId) || null; },

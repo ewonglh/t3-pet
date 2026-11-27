@@ -85,6 +85,43 @@ test('cards: marks survive a restart, so dismissed cards stay gone; old marks ar
   } finally { fs.rmSync(d, { recursive: true, force: true }); }
 });
 
+test('cards: one card per thread, showing its latest turn', () => {
+  const s = createCardStore({ now: () => NOW });
+  const turn = (id, mins, extra = {}) => ({ runId: id, threadId: 'thread-a', title: 'Thread A', status: 'completed', completedAt: NOW - mins * 60_000, snippet: id, ...extra });
+  s.add(run(50));
+  assert.equal(s.add(turn('a1', 30)), true);
+  assert.equal(s.add(turn('a2', 10)), true); // newer turn replaces the card
+  assert.deepEqual(s.view().map((c) => c.id), ['a2', 'run-50']);
+  assert.equal(s.add(turn('a0', 60)), false); // an older turn arriving late is ignored
+  assert.deepEqual(s.view().map((c) => c.id), ['a2', 'run-50']);
+  // a new turn after reading is unread again
+  s.markRead('a2');
+  assert.equal(s.unread(), 1);
+  s.add(turn('a3', 1));
+  assert.deepEqual(s.view().map((c) => [c.id, c.read]), [['a3', false], ['run-50', false]]);
+  // a new turn after dismissing brings the thread back
+  s.dismiss('a3');
+  assert.equal(s.add(turn('a4', 0)), true);
+  assert.equal(s.view()[0].id, 'a4');
+});
+
+test('cards: after a restart, a dismissed latest turn keeps older turns of that thread away', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 't3pet-cards-'));
+  const file = path.join(d, 'cards.json');
+  const turn = (id, mins) => ({ runId: id, threadId: 'thread-a', title: 'Thread A', status: 'completed', completedAt: NOW - mins * 60_000, snippet: '' });
+  try {
+    let s = createCardStore({ file, now: () => NOW });
+    s.add(turn('a1', 30));
+    s.add(turn('a2', 10));
+    s.dismiss('a2');
+    // restart: the status source replays oldest first
+    s = createCardStore({ file, now: () => NOW });
+    assert.equal(s.add(turn('a1', 30)), true);
+    assert.equal(s.add(turn('a2', 10)), true); // dismissed, but it still removes the older card
+    assert.deepEqual(s.view(), []);
+  } finally { fs.rmSync(d, { recursive: true, force: true }); }
+});
+
 test('view: relative times', () => {
   assert.equal(relTime(NOW - 10_000, NOW), 'now');
   assert.equal(relTime(NOW + 60_000, NOW), 'now');

@@ -1,6 +1,12 @@
 # Completed-thread cards
 
-Each finished T3 run becomes a card in the stack under (or above) the pet. Hover the pet, then click the bell to open the stack.
+Each T3 thread with a finished turn gets one card in the stack under (or above) the pet, showing its latest turn. Hover the pet, then click the bell to open the stack.
+
+## One card per thread
+
+- A newer turn on a thread replaces that thread's card and moves it to the front. It counts as unread again, even if you had opened or dismissed the older card.
+- An older turn that arrives later (for example while the last 24 hours are replayed at start-up) is ignored.
+- If you dismissed a thread's latest turn, its older turns stay away after a restart too.
 
 ## What a card shows
 
@@ -24,7 +30,7 @@ The bell's badge counts cards that have not been opened. Dismissing a card also 
 
 ## How many cards, and for how long
 
-- The stack holds the **20 newest** cards. When a new one arrives and there are already 20, the oldest drops off. A run older than all 20 is not added.
+- The stack holds the **20 most recent** threads. When a new one arrives and there are already 20, the oldest drops off. A run older than all 20 is not added.
 - At start-up the pet asks for runs from the last 24 hours, so work finished while it was closed still shows up.
 - Opened and dismissed marks are saved in `cards.json` in the app data folder (next to `settings.json`), so a restart does not bring dismissed cards back or reset the count. Marks older than 25 hours are dropped the next time the file is written, since those runs will never be reported again. Nothing is written under `~/.t3`.
 
