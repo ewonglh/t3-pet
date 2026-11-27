@@ -169,11 +169,12 @@
       this.el.style.transform = `translate3d(${Math.round(p.left)}px,${Math.round(p.top)}px,0)`;
     }
 
-    // Height when expanded: pill, gap, a full deck of cards and the n / total control.
+    // Height when expanded: pill, gap, the front card, and the n / total control, which sits on the
+    // peeking edges just under the front card (shell.css).
     reserve() {
       const css = getComputedStyle(this.el);
       const num = (name, fallback) => parseFloat(css.getPropertyValue(name)) || fallback;
-      return num('--pill-height', 38) + 12 + num('--card-height', 64) + 3 * num('--stack-step-y', 7) + 8 + 30;
+      return num('--pill-height', 38) + 12 + num('--card-height', 64) + 1 + 30;
     }
   }
 

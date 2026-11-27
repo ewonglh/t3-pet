@@ -15,6 +15,9 @@
 .t3-shell__stack { display: none; width: var(--card-width); flex-direction: column; align-items: center; }
 .t3-shell[data-state="expanded"] .t3-shell__stack { display: flex; }
 .t3-shell .stack { margin-top: 0; }
+/* The arrows sit on the peeking edges of the cards behind, just under the front card, instead of
+   below the whole deck. Saves about 28px. The edges either side stay clickable. */
+.t3-shell .stack-nav { position: relative; z-index: 15; margin-top: calc(1px - 3 * var(--stack-step-y)); }
 .t3-shell__stack[data-empty] .stack,
 .t3-shell__stack[data-empty] .stack-nav { display: none; }
 

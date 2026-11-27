@@ -13,7 +13,7 @@ Provider and project names from the mockups are not shown yet, because the data 
 ## Using the stack
 
 - The newest card is at the front. Up to three more peek out behind it.
-- The arrows on the "n / total" control step through the cards. Clicking a card that peeks out behind brings it to the front. Arrow keys come with #13.
+- The arrows on the "n / total" control step through the cards. The control sits on the peeking edges just under the front card, not below the whole deck, to save height. Clicking a card's peeking edge either side of it brings that card to the front. Arrow keys come with #13.
 - Clicking the front card opens its thread in T3 Code and marks it read.
 - The x on the front card dismisses it.
 - A new run arriving while the stack is open goes to the front.
