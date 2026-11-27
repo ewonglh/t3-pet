@@ -10,6 +10,7 @@ const { trayImage } = require('./main/icon');
 const { buildThreadLink } = require('./main/thread-link');
 const { resolvePet, listPets } = require('./main/pets');
 const { readSettings, writeSettings } = require('./main/settings');
+const { createCardStore } = require('./main/cards');
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -204,21 +205,39 @@ function registerHotkeys() {
 }
 
 // ---- open thread --------------------------------------------------------------------------
-// Opens the thread behind the current status in the T3 Code desktop app. The thread id comes
-// from our own status, never from the renderer. Forced (hotkey) statuses have none.
+// Opens a thread in the T3 Code desktop app. Thread ids come from our own status or card list,
+// never from the renderer (it sends a run id, which is looked up here). Forced (hotkey) statuses
+// have none.
 const linkScheme = () => process.env.T3PET_SCHEME || 't3code'; // t3code-dev for a dev build of T3 Code
 
-function openThread() {
-  const link = buildThreadLink({
-    scheme: linkScheme(),
-    environmentId: readEnvironmentId(),
-    threadId: effectiveStatus().threadId,
-  });
+function openThreadId(threadId) {
+  const link = buildThreadLink({ scheme: linkScheme(), environmentId: readEnvironmentId(), threadId });
   if (!link) {
     console.log('[t3-pet] nothing to open: no thread for this status, or no environment id');
-    return;
+    return false;
   }
   shell.openExternal(link).catch((err) => console.log(`[t3-pet] could not open the thread link: ${err.message}`));
+  return true;
+}
+
+function openThread() { openThreadId(effectiveStatus().threadId); }
+
+// ---- cards --------------------------------------------------------------------------------
+// Completed runs shown as cards under the pet. See src/main/cards.js and docs/cards.md.
+let cards = null;
+let cardsQueued = false;
+function sendCards() {
+  if (cardsQueued || !cards) return;
+  cardsQueued = true; // a burst of runs at start-up goes out as one update
+  setImmediate(() => { cardsQueued = false; send('cards', cards.view()); });
+}
+function openCard(runId) {
+  const card = cards && cards.get(runId);
+  if (!card) return;
+  if (openThreadId(card.threadId) && cards.markRead(runId)) sendCards();
+}
+function dismissCard(runId) {
+  if (cards && cards.dismiss(runId)) sendCards();
 }
 
 // Brings up the T3 Code desktop app (the pill's "Open T3 Code" button) through its own scheme.
@@ -262,6 +281,12 @@ function choosePet(key) {
 ipcMain.on('open-thread', (e) => {
   if (win && e.sender === win.webContents) openThread();
 });
+ipcMain.on('card-open', (e, runId) => {
+  if (win && e.sender === win.webContents && typeof runId === 'string') openCard(runId);
+});
+ipcMain.on('card-dismiss', (e, runId) => {
+  if (win && e.sender === win.webContents && typeof runId === 'string') dismissCard(runId);
+});
 ipcMain.on('open-app', (e) => {
   if (win && e.sender === win.webContents) openApp();
 });
@@ -287,6 +312,7 @@ ipcMain.on('ready', (e) => {
   send('paused', paused);
   if (chosenPet) send('pet', chosenPet);
   pushStatus();
+  sendCards();
 });
 
 // ---- app ----------------------------------------------------------------------------------
@@ -300,6 +326,7 @@ app.whenReady().then(() => {
   chosenPet = loadPet(spec);
   chosenKey = chosenPet && /^[\w.-]+$/.test(spec) ? spec : null; // a folder path is not in the menu
   installedPets = listPets();
+  cards = createCardStore({ file: path.join(app.getPath('userData'), 'cards.json') });
   createWindow();
   tray = new Tray(trayImage());
   tray.on('click', () => { rescanPets(); tray.popUpContextMenu(); });
@@ -308,6 +335,7 @@ app.whenReady().then(() => {
 
   t3 = createStatusSource({ log: (m) => console.log(m) });
   t3.onActivityChange((s) => { live = s && s.state !== 'idle' ? s : null; pushStatus(); });
+  t3.onRunCompleted((run) => { if (cards.add(run)) sendCards(); });
   t3.onModeChange(() => updateTray());
   t3.start();
   updateTray();

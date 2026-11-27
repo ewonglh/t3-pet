@@ -1,6 +1,6 @@
 // The pill and card stack that hang off the pet (see src/shared/overlay-shell.js for the states
 // and placement, and design/ for the look). Built with createElement only, never innerHTML.
-// The stack is an empty slot here; the cards fill it.
+// The stack slot holds the cards (cards.js), or a short note when there are none.
 (function () {
   'use strict';
   const L = window.T3OverlayShell;
@@ -33,7 +33,8 @@
     return s;
   };
 
-  // host: { setClickable(on), openApp(), openMenu() }. pet: the PetController.
+  // host: { setClickable(on), openApp(), openMenu(), openCard(id), dismissCard(id) }.
+  // pet: the PetController.
   class Shell {
     constructor(root, pet, host) {
       this.pet = pet;
@@ -69,6 +70,17 @@
       this.empty.className = 't3-shell__empty';
       this.empty.textContent = 'No completed threads yet';
       this.stack.appendChild(this.empty);
+      this.stack.dataset.empty = '';
+      this.cards = new window.T3CardStack(this.stack, {
+        open: (id) => this.host.openCard(id),
+        dismiss: (id) => this.host.dismissCard(id),
+        changed: () => {
+          const empty = this.cards.length === 0;
+          this.empty.hidden = !empty;
+          this.stack.toggleAttribute('data-empty', empty);
+          this.place();
+        },
+      });
 
       this.el.append(this.pill, this.stack);
       root.appendChild(this.el);
@@ -88,6 +100,12 @@
     }
 
     hide() { this.set('hide'); }
+
+    // list: cards from the main process, newest first. The badge counts the unread ones.
+    setCards(list) {
+      this.cards.set(list);
+      this.setUnread(list.filter((c) => !c.read).length);
+    }
 
     setUnread(n) {
       this.unread = Math.max(0, n | 0);

@@ -28,7 +28,10 @@
     setClickable,
     openApp() { api.openApp(); },
     openMenu() { api.openMenu(); },
+    openCard(id) { api.openCard(id); },
+    dismissCard(id) { api.dismissCard(id); },
   });
+  api.on('cards', (list) => shell.setCards(Array.isArray(list) ? list : []));
 
   api.on('display', (d) => pet.setBounds(d.width, d.height, d.reason));
   api.on('cursor', (c) => { pet.pointer(c.x, c.y); shell.pointer(c.x, c.y); });
