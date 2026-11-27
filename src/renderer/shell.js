@@ -200,7 +200,7 @@
     peek() { return !!(this.live || this.ending) || this.unread > 0; }
 
     set(event) {
-      const next = L.nextState(this.state, event, { peek: this.peek() });
+      const next = L.nextState(this.state, event);
       if (next === this.state) return;
       this.state = next;
       if (next === 'idle') {

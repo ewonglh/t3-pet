@@ -4,9 +4,9 @@
 // stands on the bottom edge, so that means above). The side is decided on the expanded height, so
 // expanding never makes it jump to the other side.
 //
-// The pill sits next to the pet and the stack grows beyond it. When something is running or
-// unread ("peek"), the pill shows at rest (its bell shows the state) and hovering opens the stack
-// beyond it, so the pill does not move.
+// The pill sits next to the pet and the stack grows beyond it, so the pill does not move when the
+// stack opens. When something is running or unread ("peek"), the pill shows at rest (its bell
+// shows the state). Only the bell opens the stack; hovering never does.
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -21,10 +21,9 @@
 
   // event: 'enter' (pointer over the pet or the shell), 'leave' (grace period over),
   // 'toggle' (bell or chevron clicked), 'hide' (drag started, or anything that dismisses it).
-  // peek: the pill is showing at rest, so hovering opens the stack straight away.
-  function nextState(state, event, { peek = false } = {}) {
+  function nextState(state, event) {
     switch (event) {
-      case 'enter': return state === 'idle' ? (peek ? 'expanded' : 'hovered') : state;
+      case 'enter': return state === 'idle' ? 'hovered' : state;
       case 'toggle': return state === 'hovered' ? 'expanded' : state === 'expanded' ? 'hovered' : state;
       case 'leave':
       case 'hide': return 'idle';

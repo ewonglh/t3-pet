@@ -4,6 +4,7 @@
 'use strict';
 const path = require('node:path');
 const { app, BrowserWindow, screen, ipcMain, Tray, Menu, globalShortcut, shell } = require('electron');
+const { spawn } = require('node:child_process');
 const { createStatusSource } = require('./status');
 const { readEnvironmentId } = require('./status/environment');
 const { trayImage } = require('./main/icon');
@@ -137,7 +138,7 @@ function liveCard() {
 function statusView() {
   const s = effectiveStatus();
   const key = s.threadId ? String(s.key).split(s.threadId).join(tokenFor(s.threadId)) : s.key; // keys can embed the id
-  return { state: s.state, title: s.title, key, canOpen: !!s.threadId, live: liveCard() };
+  return { state: s.state, title: s.title, key, live: liveCard() };
 }
 
 function pushStatus() {
@@ -263,7 +264,6 @@ function openThreadId(threadId) {
   return true;
 }
 
-function openThread() { openThreadId(effectiveStatus().threadId); }
 function openLive() {
   const l = !forced && live && live.live;
   if (l) openThreadId(l.threadId);
@@ -291,9 +291,27 @@ function dismissCard(runId) {
 }
 
 // Brings up the T3 Code desktop app (the pill's "Open T3 Code" button) through its own scheme.
-function openApp() {
+// "Open T3 Code" brings the app forward as it is. A bare t3code:// link goes through T3 Code's
+// link handler and can change the thread on screen. Starting T3 Code again with no arguments makes
+// the running copy reveal its window instead (its second-instance handler), or starts it if it is
+// closed. The program is the one Windows has registered for the link scheme.
+async function openApp() {
+  let exe = '';
+  try {
+    exe = (await app.getApplicationInfoForProtocol(`${linkScheme()}://`)).path;
+  } catch (err) {
+    console.log(`[t3-pet] could not find T3 Code: ${err.message}`);
+    return;
+  }
+  if (!exe) return;
   lendForeground();
-  shell.openExternal(`${linkScheme()}://`).catch((err) => console.log(`[t3-pet] could not open T3 Code: ${err.message}`));
+  try {
+    const child = spawn(exe, [], { detached: true, stdio: 'ignore' });
+    child.on('error', (err) => console.log(`[t3-pet] could not start T3 Code: ${err.message}`));
+    child.unref();
+  } catch (err) {
+    console.log(`[t3-pet] could not start T3 Code: ${err.message}`);
+  }
 }
 
 // Rescan for newly installed pets whenever the menu is about to be used.
@@ -329,9 +347,6 @@ function choosePet(key) {
 }
 
 // ---- ipc ----------------------------------------------------------------------------------
-ipcMain.on('open-thread', (e) => {
-  if (win && e.sender === win.webContents) openThread();
-});
 ipcMain.on('live-open', (e) => {
   if (win && e.sender === win.webContents) openLive();
 });

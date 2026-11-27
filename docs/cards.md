@@ -5,8 +5,9 @@ Each T3 thread with a finished turn gets one card in the stack beyond the pill, 
 ## When the pill and cards show
 
 - **At rest** (not hovering): the pill, while a thread is running or waiting, or a card is unread. Its bell shows the state: an amber alert while a thread waits on you, a spinner while one is working (still, with reduced motion), otherwise the bell. The unread count sits on it either way. With nothing running and nothing unread, the pet stands alone.
-- **Hovering** the pet or the pill opens the stack beyond the pill. The pill sits next to the pet and does not move; the cards grow away from it (upwards when the stack is above the pet, downwards when it is below).
-- With nothing running and nothing unread, hovering shows the pill only; the bell opens the stack.
+- **Hovering** the pet shows the pill, if it is not already up.
+- **The bell** opens the stack beyond the pill. Only the bell does; hovering never does. The pill sits next to the pet and does not move; the cards grow away from it (upwards when the stack is above the pet, downwards when it is below).
+- Only the pill's Open button and the cards open T3 Code. Clicking the pet is a poke, nothing more. Open T3 Code brings the app forward as it is, without changing the thread on screen.
 - Nothing shows while the pet is being carried.
 
 ## The live card
