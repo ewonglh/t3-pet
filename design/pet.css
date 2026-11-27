@@ -70,12 +70,13 @@
 }
 .pill__btn:hover { background: var(--pill-hover); }
 .pill__sep { width: 1px; height: 16px; background: var(--pill-divider); margin: 0 2px; }
+/* Circle for one digit, capsule for more. No ring: it sits inside the pill's edge, so its only
+   background is the pill, and the badge colours are chosen for contrast against it (tokens.css). */
 .pill__badge {
-  position: absolute; top: -5px; right: -6px; min-width: 16px; height: 16px; padding: 0 4px;
+  position: absolute; top: -2px; right: -2px; min-width: 16px; height: 16px; padding: 0 4px;
   display: grid; place-items: center; border-radius: var(--badge-radius);
   background: var(--badge-bg); color: var(--badge-fg);
-  font: var(--weight-semibold) 10.5px/1 var(--font-sans); letter-spacing: 0.01em;
-  box-shadow: 0 0 0 2px var(--popover);
+  font: var(--weight-semibold) 10px/1 var(--font-sans); font-variant-numeric: tabular-nums;
 }
 .pill .icon { width: 17px; height: 17px; }
 .pill__btn[aria-expanded="true"] { background: var(--chip-active); }

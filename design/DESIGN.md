@@ -45,7 +45,7 @@ Tokens: `--dur-move` 240ms, `--dur-fade` 160ms, `--dur-fast` 120ms, `--ease-out`
 
 ## Accessibility
 
-Contrast, computed for the worst plausible case (88% card or pill over a mid-tone wallpaper): light title and pill icons 16:1, light snippet 7.1:1 (zinc-500 would be 4.5:1), dark title and pill icons 15:1, dark snippet 6.6:1. The pill uses the same foreground and glass as the cards, so it has the same numbers. Badge is dark on emerald-400, 7.9:1 (white on emerald-500 would be 2.5:1). Status icons use T3's `-foreground` green and red (the plain green is 2.3:1 on a light card). Settings: the sidebar section label under search results uses `--sidebar-muted-foreground` (4.6:1 on the light sidebar). Control edges that carry meaning (switch off track, key-capture border, selected sidebar row) use `--border-strong`, about 3.2:1 to 3.8:1 against their surroundings, instead of the faint palette borders (about 1.0 to 1.7:1). Not checked: very bright or very busy wallpapers; the glass is dense (88%) to cover this, but test with real desktops.
+Contrast, computed for the worst plausible case (88% card or pill over a mid-tone wallpaper): light title and pill icons 16:1, light snippet 7.1:1 (zinc-500 would be 4.5:1), dark title and pill icons 15:1, dark snippet 6.6:1. The pill uses the same foreground and glass as the cards, so it has the same numbers. Badge: a circle with no ring, sitting inside the pill's edge. Light: white on emerald-700, 5.5:1 for the number and for the circle against the white pill (emerald-400 would be 1.9:1 there). Dark: dark text on emerald-400, 7.9:1 for the number and 9.8:1 against the dark pill. Status icons use T3's `-foreground` green and red (the plain green is 2.3:1 on a light card). Settings: the sidebar section label under search results uses `--sidebar-muted-foreground` (4.6:1 on the light sidebar). Control edges that carry meaning (switch off track, key-capture border, selected sidebar row) use `--border-strong`, about 3.2:1 to 3.8:1 against their surroundings, instead of the faint palette borders (about 1.0 to 1.7:1). Not checked: very bright or very busy wallpapers; the glass is dense (88%) to cover this, but test with real desktops.
 
 Focus: every control shows a two-tone ring (background gap, then primary), and the same ring inside the pill (it follows the theme). Never colour-only: status has an icon and an accessible name ("Completed", "Failed"). Keyboard: Tab reaches the pill, the front card and its dismiss button; Up/Down (rebindable) browse; Enter opens; Delete or Esc dismisses; back cards are `aria-hidden` and untabbable. The "n / total" count is a polite live region with the thread title and status. Pet picker and polling choice are radio groups with arrow keys; toggles are `role="switch"`. Because the overlay window is non-focusable in the current t3-pet, keyboard focus needs a decision (open question).
 
@@ -62,7 +62,7 @@ Small tweaks only; structure, glass look and T3 tokens are unchanged.
 - Tighter deck: 7px offset per layer, scale step 0.02, opacity step 0.22, shuffle travel 10px, three layers behind the front card (four in all). Tokens: `--stack-step-y`, `--stack-step-scale`, `--stack-step-fade`, `--stack-travel`.
 - Voice button removed. The compose button is now "Open T3 Code" (Lucide external-link). Pill is now open + bell (expanded: open + chevron).
 - Cards show a quiet second line: provider (Claude or Codex), then project name; failed cards lead it with "Failed" in red. Toggle in settings ("Show provider and project").
-- Differences from the reference: 1.75px icon strokes, 12px card radius (T3 xl), 38px pill, a rounded-square count badge (5px radius) instead of a round one, 13px title with 12.5px snippet and 11px meta and time, 14px card padding.
+- Differences from the reference: 1.75px icon strokes, 12px card radius (T3 xl), 38px pill, 13px title with 12.5px snippet and 11px meta and time, 14px card padding.
 - The pill was dark in both themes in this revision; part 2 below supersedes that, and it now follows the theme.
 
 ### Revision 2, part 2 (direction from the user)
@@ -95,3 +95,7 @@ Small tweaks only; structure, glass look and T3 tokens are unchanged.
 
 The bottom of the Keyboard section has a **Test commands** group: a switch (off by default) and one rebindable shortcut per command that forces a status (live, idle, working, waiting, done, error). The shortcut buttons are disabled while the switch is off. These are global shortcuts meant for trying the pet without a live T3 task, so they are opt-in and kept apart from the card keys. See issue #17.
 
+
+## Badge (revised in #10)
+
+The count badge is a circle (a capsule for two or more digits) with no ring, replacing the earlier rounded square with a ring in the pill colour. It sits just inside the pill's edge, so the pill is its only background, and its colour changes with the theme to keep contrast without an outline: white on emerald-700 in light, dark on emerald-400 in dark.
