@@ -14,7 +14,7 @@ test('state: hover shows the pill, the bell expands and collapses, leaving hides
   assert.equal(nextState('hovered', 'hide'), 'idle');
   assert.equal(nextState('hovered', 'nonsense'), 'hovered');
 });
-
+
 test('state: with a card at rest, hovering opens the whole stack around it', () => {
   assert.equal(nextState('idle', 'enter', { peek: true }), 'expanded');
   assert.equal(nextState('expanded', 'toggle', { peek: true }), 'hovered'); // the bell still folds it
