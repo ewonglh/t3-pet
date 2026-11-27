@@ -4,7 +4,6 @@
 'use strict';
 const path = require('node:path');
 const { app, BrowserWindow, screen, ipcMain, Tray, Menu, globalShortcut, shell } = require('electron');
-const { spawn } = require('node:child_process');
 const { createStatusSource } = require('./status');
 const { readEnvironmentId } = require('./status/environment');
 const { trayImage } = require('./main/icon');
@@ -138,7 +137,7 @@ function liveCard() {
 function statusView() {
   const s = effectiveStatus();
   const key = s.threadId ? String(s.key).split(s.threadId).join(tokenFor(s.threadId)) : s.key; // keys can embed the id
-  return { state: s.state, title: s.title, key, live: liveCard() };
+  return { state: s.state, title: s.title, key, canOpen: !!s.threadId, live: liveCard() };
 }
 
 function pushStatus() {
@@ -235,35 +234,17 @@ function registerHotkeys() {
 // have none.
 const linkScheme = () => process.env.T3PET_SCHEME || 't3code'; // t3code-dev for a dev build of T3 Code
 
-// Windows only lets the app in the foreground bring another app to the front, and the overlay is
-// never focused (focusable: false), so T3 Code would open the thread but stay behind other
-// windows. Right after a click on the overlay, take focus for a moment so the foreground passes on
-// to T3 Code when it handles the link, then go back to never taking focus.
-const LEND_FOCUS_MS = 1500;
-let lendTimer = null;
-function lendForeground() {
-  if (!win || win.isDestroyed() || process.platform !== 'win32') return;
-  clearTimeout(lendTimer);
-  win.setFocusable(true);
-  win.focus();
-  lendTimer = setTimeout(() => {
-    if (!win || win.isDestroyed()) return;
-    if (win.isFocused()) win.blur(); // T3 Code did not take it: do not keep the keyboard
-    win.setFocusable(false);
-  }, LEND_FOCUS_MS);
-}
-
 function openThreadId(threadId) {
   const link = buildThreadLink({ scheme: linkScheme(), environmentId: readEnvironmentId(), threadId });
   if (!link) {
     console.log('[t3-pet] nothing to open: no thread for this status, or no environment id');
     return false;
   }
-  lendForeground();
   shell.openExternal(link).catch((err) => console.log(`[t3-pet] could not open the thread link: ${err.message}`));
   return true;
 }
 
+function openThread() { openThreadId(effectiveStatus().threadId); }
 function openLive() {
   const l = !forced && live && live.live;
   if (l) openThreadId(l.threadId);
@@ -291,27 +272,8 @@ function dismissCard(runId) {
 }
 
 // Brings up the T3 Code desktop app (the pill's "Open T3 Code" button) through its own scheme.
-// "Open T3 Code" brings the app forward as it is. A bare t3code:// link goes through T3 Code's
-// link handler and can change the thread on screen. Starting T3 Code again with no arguments makes
-// the running copy reveal its window instead (its second-instance handler), or starts it if it is
-// closed. The program is the one Windows has registered for the link scheme.
-async function openApp() {
-  let exe = '';
-  try {
-    exe = (await app.getApplicationInfoForProtocol(`${linkScheme()}://`)).path;
-  } catch (err) {
-    console.log(`[t3-pet] could not find T3 Code: ${err.message}`);
-    return;
-  }
-  if (!exe) return;
-  lendForeground();
-  try {
-    const child = spawn(exe, [], { detached: true, stdio: 'ignore' });
-    child.on('error', (err) => console.log(`[t3-pet] could not start T3 Code: ${err.message}`));
-    child.unref();
-  } catch (err) {
-    console.log(`[t3-pet] could not start T3 Code: ${err.message}`);
-  }
+function openApp() {
+  shell.openExternal(`${linkScheme()}://`).catch((err) => console.log(`[t3-pet] could not open T3 Code: ${err.message}`));
 }
 
 // Rescan for newly installed pets whenever the menu is about to be used.
@@ -347,6 +309,9 @@ function choosePet(key) {
 }
 
 // ---- ipc ----------------------------------------------------------------------------------
+ipcMain.on('open-thread', (e) => {
+  if (win && e.sender === win.webContents) openThread();
+});
 ipcMain.on('live-open', (e) => {
   if (win && e.sender === win.webContents) openLive();
 });

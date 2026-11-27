@@ -20,6 +20,7 @@
       if (shell) shell.petHover(on); else setClickable(on);
     },
     setAsleep(asleep) { api.setAsleep(asleep); },
+    openThread() { api.openThread(); },
     frame() { if (shell) shell.frame(); },
   });
 

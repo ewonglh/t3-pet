@@ -7,7 +7,6 @@ Each T3 thread with a finished turn gets one card in the stack beyond the pill, 
 - **At rest** (not hovering): the pill, while a thread is running or waiting, or a card is unread. Its bell shows the state: an amber alert while a thread waits on you, a spinner while one is working (still, with reduced motion), otherwise the bell. The unread count sits on it either way. With nothing running and nothing unread, the pet stands alone.
 - **Hovering** the pet shows the pill, if it is not already up.
 - **The bell** opens the stack beyond the pill. Only the bell does; hovering never does. The pill sits next to the pet and does not move; the cards grow away from it (upwards when the stack is above the pet, downwards when it is below).
-- Only the pill's Open button and the cards open T3 Code. Clicking the pet is a poke, nothing more. Open T3 Code brings the app forward as it is, without changing the thread on screen.
 - Nothing shows while the pet is being carried.
 
 ## The live card
@@ -38,7 +37,7 @@ Provider and project names from the mockups are not shown yet, because the data 
 - The newest card is at the front. Up to three more peek out behind it.
 - Once the bell is pressed, up and down arrows and "n / total" join the right end of the pill, so they take no height of their own. They show only when there are two or more cards. Clicking a card's peeking edge brings that card to the front. Arrow keys come with #13.
 - Scrolling over the open stack or pill also steps through the cards: down for older, up for newer. One mouse-wheel notch is one card; trackpad scrolling adds up to a step and is paced so a fling does not race through the deck.
-- Clicking the front card opens its thread in T3 Code, brings T3 Code to the front, and marks the card read. (On Windows the overlay takes focus for a moment so T3 Code is allowed to come forward; see `lendForeground` in `src/main.js`.)
+- Clicking the front card opens its thread in T3 Code and marks it read.
 - The x on the front card dismisses it.
 - A new run arriving while the stack is open goes to the front.
 
