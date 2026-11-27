@@ -13,7 +13,7 @@ You can also point `T3PET_PET` at a folder name or a full folder path. See `AGEN
 
 - **This repo ships no community pets.** Petdex pets belong to their creators, who set their own terms. Nothing in this repo's MIT licence covers them.
 - The built-in mascot is drawn by code in `src/shared/sprite.js`, written by the upstream author and released under MIT with the rest of the code. The character it depicts, and the T3 name, belong to T3. MIT covers the code, not the character.
-- `assets/mascot-reference.png` is a still of T3's character that the upstream project added as a drawing reference. It is not covered by this repo's MIT licence. Whether to keep it is still to be decided.
+- `assets/mascot-reference.png` is a still of T3's character that the upstream project added as a drawing reference. It is not covered by this repo's MIT licence. Whether to keep it is tracked in issue #45.
 - Check a pet's terms with its creator before you redistribute it, put it in a video, or use it commercially.
 - If you make your own pet, you choose its licence.
 
